@@ -1,5 +1,10 @@
 # Change Log
 
+### v1.4.0
+August 6, 2018
+
+* Add sendStream() api
+
 ### v1.3.2
 
 * Remove isomorphic-fetch and implements our own isomorphism.
