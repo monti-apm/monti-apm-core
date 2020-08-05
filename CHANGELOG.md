@@ -1,5 +1,12 @@
 # Change Log
 
+### v1.5.0
+August 4, 2020
+
+* Update dependencies
+* Remove dependency on bluebird
+* Replace fetch with axios
+
 ### v1.4.0
 August 6, 2018
 
