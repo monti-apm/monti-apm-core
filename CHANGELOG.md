@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.6.0
+August 12, 2020
+
+* Add `agentVersion` option to send agent version in header
+
 ### v1.5.0
 August 4, 2020
 
