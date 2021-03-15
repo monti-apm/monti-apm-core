@@ -14,7 +14,7 @@
   },
   "scripts": {
     "prepublish": "./node_modules/.bin/babel --plugins \"transform-runtime\" lib --ignore __tests__ --out-dir ./dist",
-    "lint": "./node_modules/.bin/eslint ./lib",
+    "lint": "./node_modules/.bin/eslint ./lib --cache",
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
     "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js",
     "test": "npm run lint && npm run testonly"
@@ -49,8 +49,6 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "babel-runtime": "6.x.x",
-    "debug": "^3.2.6",
-    "request": "2.x.x"
+    "debug": "^3.2.6"
   }
 }
