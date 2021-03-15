@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.0
+March 15, 2020
+
+* Remove request and babel-runtime dependencies
+* Add `Kadira.get(path, options)`
+
 ## 1.6.0
 August 12, 2020
 

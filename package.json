@@ -1,6 +1,6 @@
 {
   "name": "monti-apm-core",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Monti APM Core API",
   "main": "./dist/",
   "options": {
@@ -48,7 +48,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "debug": "^3.2.6"
   }
 }
