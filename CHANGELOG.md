@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.7.1
+March 22, 2020
+
+* Remove dependency on babel-runtime
+
 ## 1.7.0
 March 15, 2020
 
