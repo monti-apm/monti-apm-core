@@ -1,12 +1,17 @@
 # Change Log
 
+## 1.7.2
+March 24, 2021
+
+* Remove dependency on regenerator
+
 ## 1.7.1
-March 22, 2020
+March 22, 2021
 
 * Remove dependency on babel-runtime
 
 ## 1.7.0
-March 15, 2020
+March 15, 2021
 
 * Remove request and babel-runtime dependencies
 * Add `Kadira.get(path, options)`
