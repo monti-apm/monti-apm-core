@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.7.3
+July 28, 2021
+
+* Increase maximum body size
+
 ## 1.7.2
 March 24, 2021
 
