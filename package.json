@@ -13,7 +13,7 @@
     ]
   },
   "scripts": {
-    "prepublish": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist",
+    "prepare": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist",
     "lint": "./node_modules/.bin/eslint ./lib --cache",
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
     "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js",
