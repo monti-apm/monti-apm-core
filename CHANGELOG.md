@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.7.5
+May 23, 2022
+
+* Fix publishing 1.7.4
+
 ## 1.7.4
 May 23, 2022
 
