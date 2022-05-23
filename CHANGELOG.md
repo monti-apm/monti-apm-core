@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.7.4
+May 23, 2022
+
+* Improve handling of errors in sendData
+
 ## 1.7.3
 July 28, 2021
 
