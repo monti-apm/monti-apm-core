@@ -14,6 +14,7 @@
   },
   "scripts": {
     "prepare": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist",
+    "watch": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist --watch",
     "lint": "./node_modules/.bin/eslint ./lib --cache",
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
     "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js",
@@ -47,7 +48,9 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "axios": "^0.21.4",
-    "debug": "^3.2.6"
+    "axios": "^1.3.4",
+    "debug": "^3.2.6",
+    "zipson": "^0.2.12",
+    "zipson-stream": "^0.3.4"
   }
 }
