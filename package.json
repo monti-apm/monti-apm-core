@@ -17,7 +17,7 @@
     "watch": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist --watch",
     "lint": "./node_modules/.bin/eslint ./lib --cache",
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
-    "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js",
+    "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js --exit",
     "test": "npm run lint && npm run testonly",
     "test:watch": "nodemon --exec 'npm run testonly' -e js --watch lib"
   },
