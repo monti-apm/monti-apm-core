@@ -38,7 +38,7 @@
     "@types/backoff": "^2.5.2",
     "@types/chai": "^4.3.4",
     "chai": "^4.3.7",
-    "esbuild": "^0.18.15",
+    "esbuild": "0.18.16",
     "eslint": "^8.37.0",
     "eslint-plugin-babel": "^5.3.0",
     "express": "^4.17.1",
