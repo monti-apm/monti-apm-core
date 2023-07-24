@@ -13,7 +13,8 @@
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
     "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js --exit",
     "test": "npm run lint && npm run testonly",
-    "test:watch": "nodemon --exec 'npm run testonly' -e js --watch lib"
+    "test:watch": "nodemon --exec 'npm run testonly' -e js --watch lib",
+    "build": "esbuild lib/index.ts --platform=node --target=node4.8 --outdir=dist"
   },
   "repository": {
     "type": "git",
