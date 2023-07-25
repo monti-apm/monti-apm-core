@@ -10,5 +10,5 @@ npm-debug.log
 
 node_modules
 scripts
-lib
+src
 .babelrc

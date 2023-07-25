@@ -1,23 +1,18 @@
-import { inherits } from 'util';
-
-// XXX: We we need to use instanceof with these error classes.
-// So, we can't use Babel's version of extends for that.
-// It's doesn't support that. See: http://stackoverflow.com/a/33877501/457224
-// That's why we are doing it in the old fashion way.
-
 // reject the promise with this error when run out of retry attmpts.
-export const MaxRetryError = function (message) {
-  Error.call(this, message);
-  this.message = message;
-};
-inherits(MaxRetryError, Error);
+export class MaxRetryError extends Error {
+  constructor(message) {
+    super(message)
+    this.message = message
+  }
+}
 
 // reject the promise with this error (in promiser) to stop retrying.
-export const ByPassRetryError = function (message) {
-  Error.call(this, message);
-  this.message = message;
-};
-inherits(MaxRetryError, Error);
+export class ByPassRetryError extends Error {
+  constructor(message) {
+    super(message)
+    this.message = message
+  }
+}
 
 // retry([options], fn)
 // retry module takes a `promiser` function as the main argument.
@@ -26,51 +21,54 @@ inherits(MaxRetryError, Error);
 // it will retry by running the `promiser` function again. Retry will
 // stop when it has tried `maxRetries` times or if the promise fails
 // with the special error `ERR_ENDRETRY`.
-export default function retry(promiser, _options) {
-  const options = Object.assign({
-    maxRetries: 3,
-    timeFunction: i => 100 * Math.pow(i, 2),
-  }, _options || {});
+export default function retry(promiser, _options = {}) {
+  const options = Object.assign(
+    {
+      maxRetries: 3,
+      timeFunction: i => 100 * Math.pow(i, 2),
+    },
+    _options || {},
+  )
 
   // The retry module returns a promise which will end when the task
   // is successful or when the retry fails by retry count or by user.
   // It will also collect start/end times for each retry attempt.
   return new Promise(function (resolve, reject) {
-    let count = 0;
+    let count = 0
 
     const onError = function (err) {
       if (err instanceof ByPassRetryError) {
-        reject(err);
+        reject(err)
       } else {
-        attempt(err);
+        attempt(err)
       }
-    };
+    }
 
-    const attempt = function (lastError) {
+    const attempt = function (lastError = null) {
       // Does not include the first attempt to avoid confusion as the
       // option is `max[Re]tries`.
       if (count++ > options.maxRetries) {
-        const message = `Reached maximum retry limit for ${lastError.message}`;
-        const err = new MaxRetryError(message);
-        return reject(err);
+        const message = `Reached maximum retry limit for ${lastError.message}`
+        const err = new MaxRetryError(message)
+        return reject(err)
       }
 
       // stop a few milliseconds between retries
-      const millis = options.timeFunction(count);
+      const millis = options.timeFunction(count)
       delay(millis)
         .then(() => {
-          return promiser();
+          return promiser()
         })
-        .then(resolve, onError);
-    };
+        .then(resolve, onError)
+    }
 
     // start!
-    attempt();
-  });
+    attempt()
+  })
 }
 
 function delay(millis) {
   return new Promise(resolve => {
-    setTimeout(resolve, millis);
-  });
+    setTimeout(resolve, millis)
+  })
 }

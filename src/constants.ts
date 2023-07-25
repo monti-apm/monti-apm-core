@@ -10,8 +10,7 @@ export const CoreEvent = {
   WEBSOCKET_BACKOFF_READY: 'websocket:backoff:ready',
   WEBSOCKET_BACKOFF_FAIL: 'websocket:backoff:fail',
   WEBSOCKET_BACKOFF_RESET: 'websocket:backoff:reset',
-};
-
+}
 
 export const WebSocketEvent = {
   OPEN: 'open',
@@ -19,27 +18,27 @@ export const WebSocketEvent = {
   MESSAGE: 'message',
   ERROR: 'error',
   PING: 'ping',
-};
+}
 
 export const BackoffEvent = {
   READY: 'ready',
   BACKOFF: 'backoff',
   FAIL: 'fail',
-};
+}
 
 export const ContentType = {
   JSON: 'application/json',
   TEXT: 'text/plain',
   STREAM: 'application/octet-stream',
-};
+}
 
 export const EngineEvent = {
   JOB_CREATED: 'job:created',
-};
+}
 
 export const HttpHeader = {
   ACCEPT_FEATURES: 'accept-features',
-};
+}
 
 export const HttpMethod = {
   GET: 'GET',
@@ -48,12 +47,12 @@ export const HttpMethod = {
   DELETE: 'DELETE',
   HEAD: 'HEAD',
   OPTIONS: 'OPTIONS',
-};
+}
 
 export const Feature = {
-  WEBSOCKETS: 'websockets'
-};
+  WEBSOCKETS: 'websockets',
+}
 
 export const SupportedFeatures = {
-  [Feature.WEBSOCKETS]: true
-};
+  [Feature.WEBSOCKETS]: true,
+}

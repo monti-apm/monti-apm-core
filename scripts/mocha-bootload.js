@@ -1,6 +1,6 @@
-require('@babel/register');
+require('@babel/register')
 
 process.on('unhandledRejection', function (error) {
-  console.error('Unhandled Promise Rejection:');
-  console.error(error && error.stack || error);
-});
+  console.error('Unhandled Promise Rejection:')
+  console.error((error && error.stack) || error)
+})

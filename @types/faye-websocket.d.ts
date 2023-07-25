@@ -10,7 +10,11 @@ declare module 'faye-websocket' {
   }
 
   export class Client {
-    constructor(url: string, protocols?: Array<string> | null, options?: { [name: string]: unknown })
+    constructor(
+      url: string,
+      protocols?: Array<string> | null,
+      options?: { [name: string]: unknown },
+    )
 
     send(data: string): void
 
