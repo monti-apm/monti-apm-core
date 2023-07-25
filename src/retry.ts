@@ -21,7 +21,10 @@ export class ByPassRetryError extends Error {
 // it will retry by running the `promiser` function again. Retry will
 // stop when it has tried `maxRetries` times or if the promise fails
 // with the special error `ERR_ENDRETRY`.
-export default function retry(promiser, _options = {}) {
+export default function retry<T = any>(
+  getPromise: () => Promise<T>,
+  _options = {},
+): Promise<T> {
   const options = Object.assign(
     {
       maxRetries: 3,
@@ -57,7 +60,7 @@ export default function retry(promiser, _options = {}) {
       const millis = options.timeFunction(count)
       delay(millis)
         .then(() => {
-          return promiser()
+          return getPromise()
         })
         .then(resolve, onError)
     }

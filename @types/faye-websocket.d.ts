@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events'
+
 declare module 'faye-websocket' {
   export interface MessageEvent {
     data: any
@@ -9,22 +11,17 @@ declare module 'faye-websocket' {
     wasClean: boolean
   }
 
-  export class Client {
+  export class Client extends EventEmitter {
     constructor(
       url: string,
       protocols?: Array<string> | null,
-      options?: { [name: string]: unknown },
+      options?: Record<string, unknown>,
     )
 
     send(data: string): void
 
     close(code?: number, reason?: string): void
 
-    on(event: 'open', cb: () => void): void
-    on(event: 'message', cb: (msg: MessageEvent) => void): void
-    on(event: 'close', cb: (event: CloseEvent) => void): void
-    on(event: 'error', cb: (error: Error) => void): void
+    pong(): void
   }
-
-  export default WebSocket
 }

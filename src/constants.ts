@@ -12,45 +12,45 @@ export const CoreEvent = {
   WEBSOCKET_BACKOFF_RESET: 'websocket:backoff:reset',
 }
 
-export const WebSocketEvent = {
-  OPEN: 'open',
-  CLOSE: 'close',
-  MESSAGE: 'message',
-  ERROR: 'error',
-  PING: 'ping',
+export enum WebSocketEvent {
+  OPEN = 'open',
+  CLOSE = 'close',
+  MESSAGE = 'message',
+  ERROR = 'error',
+  PING = 'ping',
 }
 
-export const BackoffEvent = {
-  READY: 'ready',
-  BACKOFF: 'backoff',
-  FAIL: 'fail',
+export enum BackoffEvent {
+  READY = 'ready',
+  BACKOFF = 'backoff',
+  FAIL = 'fail',
 }
 
-export const ContentType = {
-  JSON: 'application/json',
-  TEXT: 'text/plain',
-  STREAM: 'application/octet-stream',
+export enum ContentType {
+  JSON = 'application/json',
+  TEXT = 'text/plain',
+  STREAM = 'application/octet-stream',
 }
 
-export const EngineEvent = {
-  JOB_CREATED: 'job:created',
+export enum EngineEvent {
+  JOB_CREATED = 'job:created',
 }
 
-export const HttpHeader = {
-  ACCEPT_FEATURES: 'accept-features',
+export enum HttpHeader {
+  ACCEPT_FEATURES = 'accept-features',
 }
 
-export const HttpMethod = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  DELETE: 'DELETE',
-  HEAD: 'HEAD',
-  OPTIONS: 'OPTIONS',
+export enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+  HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
 }
 
-export const Feature = {
-  WEBSOCKETS: 'websockets',
+export enum Feature {
+  WEBSOCKETS = 'websockets',
 }
 
 export const SupportedFeatures = {

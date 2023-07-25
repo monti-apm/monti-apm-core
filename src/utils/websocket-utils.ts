@@ -9,15 +9,12 @@ export function getWsUrl(url) {
   return url.replace('https://', 'wss://').replace('http://', 'ws://')
 }
 
-export function connectWebSocket(url, headers): Promise<WebSocket> {
+export function connectWebSocket(url, headers): Promise<WebSocket.Client> {
   return new Promise((resolve, reject) => {
     const errorHandler = event => {
       reject(event)
     }
 
-    /**
-     * Not the same but the signature is similar to this type.
-     */
     const ws = new WebSocket.Client(getWsUrl(url).concat('/websocket'), null, {
       headers,
     })
@@ -132,7 +129,7 @@ export async function connectWithBackoff(core) {
 
   _backoff.failAfter(connectWithBackoff._failAfter)
 
-  _backoff.on(BackoffEvent.READY, async (number, delay) => {
+  _backoff.on(BackoffEvent.READY, (number, delay) => {
     core.emit(CoreEvent.WEBSOCKET_BACKOFF_READY, number, delay)
   })
 
