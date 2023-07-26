@@ -11,8 +11,10 @@
       "@/*": [
         "src/*"
       ]
-    },
-    "target": "es5"
+    }
+  },
+  "env": {
+    "targets": "node 4"
   },
   "module": {
     "type": "commonjs"

@@ -5,7 +5,7 @@
   "main": "./dist/",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "esbuild $(glob 'src/**/*.{js,ts}' --nodir --ignore 'src/**/*.test.{js,ts}' --ignore 'src/tests/**/*') --platform=node --target=es6 --outdir=dist --bundle=false --sourcemap",
+    "build": "swc $(glob 'src/**/*.{js,ts}' --nodir --ignore 'src/**/*.test.{js,ts}' --ignore 'src/tests/**/*') --out-dir=dist",
     "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
@@ -41,8 +41,6 @@
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "chai": "^4.3.7",
-    "esbuild": "^0.18.17",
-    "esbuild-register": "^3.4.2",
     "eslint": "8.45.0",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
@@ -66,5 +64,8 @@
   "volta": {
     "node": "14.21.2",
     "yarn": "1.22.17"
+  },
+  "resolutions": {
+    "string-width": "4.2.3"
   }
 }
