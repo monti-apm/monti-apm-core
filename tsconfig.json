@@ -25,5 +25,10 @@
   "include": [
     "@types",
     "src"
+  ],
+  "exclude": [
+    "src/tests",
+    "**/*.test.js",
+    "**/*.test.ts"
   ]
 }

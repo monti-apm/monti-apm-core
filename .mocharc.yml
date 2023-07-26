@@ -1,5 +1,5 @@
 require:
-  - '@swc/register'
+  - 'esbuild-register'
 watch: true
 file:
   - 'scripts/mocha-setup.js'

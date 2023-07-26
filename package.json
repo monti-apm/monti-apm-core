@@ -5,13 +5,14 @@
   "main": "./dist/",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "swc src --out-dir=dist --ignore src/**/*.test.js",
+    "build": "esbuild $(glob 'src/**/*.{js,ts}' --nodir --ignore 'src/**/*.test.{js,ts}' --ignore 'src/tests/**/*') --platform=node --target=es6 --outdir=dist --bundle=false --sourcemap",
+    "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
     "testonly": "mocha src/**/*.test.js --watch=false --exit",
     "test": "npm run lint && npm run testonly",
     "test:watch": "nodemon --exec 'npm run testonly' -e js --watch src",
-    "prepublish": "yarn clean && yarn build"
+    "prepublish": "yarn clean && yarn build && yarn types"
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,7 @@
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
     "express": "^4.17.1",
+    "glob": "^10.3.3",
     "mocha": "10.2.0",
     "nodemon": "^2.0.21",
     "prettier": "2.8.8",
