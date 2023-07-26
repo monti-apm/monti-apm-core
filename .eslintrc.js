@@ -6,6 +6,8 @@ module.exports = {
   rules: {
     'no-console': 0,
     'no-inner-declarations': 0,
+    'arrow-parens': ['error', 'always'],
+    semi: ['error', 'always'],
   },
   env: {
     node: true,
@@ -24,8 +26,7 @@ module.exports = {
         '@typescript-eslint/ban-ts-comment': 0,
         '@typescript-eslint/no-namespace': 0,
         '@typescript-eslint/no-empty-function': 0,
-        '@typescript-eslint/no-extra-semi': 0,
       },
     },
   ],
-}
+};

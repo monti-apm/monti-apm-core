@@ -1,16 +1,16 @@
 // reject the promise with this error when run out of retry attmpts.
 export class MaxRetryError extends Error {
   constructor(message) {
-    super(message)
-    this.message = message
+    super(message);
+    this.message = message;
   }
 }
 
 // reject the promise with this error (in promiser) to stop retrying.
 export class ByPassRetryError extends Error {
   constructor(message) {
-    super(message)
-    this.message = message
+    super(message);
+    this.message = message;
   }
 }
 
@@ -28,50 +28,50 @@ export default function retry<T = any>(
   const options = Object.assign(
     {
       maxRetries: 3,
-      timeFunction: i => 100 * Math.pow(i, 2),
+      timeFunction: (i) => 100 * Math.pow(i, 2),
     },
     _options || {},
-  )
+  );
 
   // The retry module returns a promise which will end when the task
   // is successful or when the retry fails by retry count or by user.
   // It will also collect start/end times for each retry attempt.
   return new Promise(function (resolve, reject) {
-    let count = 0
+    let count = 0;
 
     const onError = function (err) {
       if (err instanceof ByPassRetryError) {
-        reject(err)
+        reject(err);
       } else {
-        attempt(err)
+        attempt(err);
       }
-    }
+    };
 
     const attempt = function (lastError = null) {
       // Does not include the first attempt to avoid confusion as the
       // option is `max[Re]tries`.
       if (count++ > options.maxRetries) {
-        const message = `Reached maximum retry limit for ${lastError.message}`
-        const err = new MaxRetryError(message)
-        return reject(err)
+        const message = `Reached maximum retry limit for ${lastError.message}`;
+        const err = new MaxRetryError(message);
+        return reject(err);
       }
 
       // stop a few milliseconds between retries
-      const millis = options.timeFunction(count)
+      const millis = options.timeFunction(count);
       delay(millis)
         .then(() => {
-          return getPromise()
+          return getPromise();
         })
-        .then(resolve, onError)
-    }
+        .then(resolve, onError);
+    };
 
     // start!
-    attempt()
-  })
+    attempt();
+  });
 }
 
 function delay(millis) {
-  return new Promise(resolve => {
-    setTimeout(resolve, millis)
-  })
+  return new Promise((resolve) => {
+    setTimeout(resolve, millis);
+  });
 }

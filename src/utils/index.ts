@@ -1,9 +1,9 @@
-import retry, { ByPassRetryError } from '../retry'
-import axios, { AxiosResponse } from 'axios'
-import debug from 'debug'
-import { HttpMethod, SupportedFeatures } from '@/constants'
+import retry, { ByPassRetryError } from '../retry';
+import axios, { AxiosResponse } from 'axios';
+import debug from 'debug';
+import { HttpMethod, SupportedFeatures } from '@/constants';
 
-const logger = debug('kadira-core:transport')
+const logger = debug('kadira-core:transport');
 
 export function getAxiosConfig(params) {
   return {
@@ -12,80 +12,80 @@ export function getAxiosConfig(params) {
     maxBodyLength: 100 * 1024 * 1024,
     method: params.method || HttpMethod.POST,
     maxRedirects: 0,
-  }
+  };
 }
 
 export function axiosRetry(url, params, retryOptions): Promise<AxiosResponse> {
-  let retryEnabled = true
+  let retryEnabled = true;
 
   if (params.noRetry) {
-    retryEnabled = false
-    delete params.noRetry
+    retryEnabled = false;
+    delete params.noRetry;
   }
 
   return retry(() => {
     return new Promise((resolve, reject) => {
       axios(url, getAxiosConfig(params))
-        .then(res => {
-          return resolve(res)
+        .then((res) => {
+          return resolve(res);
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.response && err.response.status) {
-            const status = err.response.status
+            const status = err.response.status;
 
             if (status === 401) {
-              logger('Error: Unauthorized')
-              return reject(new ByPassRetryError('Unauthorized'))
+              logger('Error: Unauthorized');
+              return reject(new ByPassRetryError('Unauthorized'));
             } else if (status >= 400 && status < 500) {
-              const message = `Agent Error: ${status}`
-              logger(`Error: ${message}`)
-              return reject(new ByPassRetryError(message))
+              const message = `Agent Error: ${status}`;
+              logger(`Error: ${message}`);
+              return reject(new ByPassRetryError(message));
             }
 
-            const message = `Request failed: ${status}`
-            const ErrConstructor = retryEnabled ? Error : ByPassRetryError
+            const message = `Request failed: ${status}`;
+            const ErrConstructor = retryEnabled ? Error : ByPassRetryError;
 
-            logger(`Error: ${message}`)
-            return reject(new ErrConstructor(message))
+            logger(`Error: ${message}`);
+            return reject(new ErrConstructor(message));
           }
 
           if (!retryEnabled) {
-            const oldErr = err
+            const oldErr = err;
             // eslint-disable-next-line no-param-reassign
-            err = new ByPassRetryError(oldErr.message)
-            err.stack = oldErr.stack
+            err = new ByPassRetryError(oldErr.message);
+            err.stack = oldErr.stack;
           }
 
-          return reject(err)
-        })
-    })
-  }, retryOptions)
+          return reject(err);
+        });
+    });
+  }, retryOptions);
 }
 
 export function parseAllowedFeaturesHeader(header) {
-  const result = {}
+  const result = {};
 
   if (header) {
-    header.split(',').map(feature => {
+    header.split(',').map((feature) => {
       if (SupportedFeatures[feature]) {
-        result[feature] = true
+        result[feature] = true;
       }
-    })
+    });
   }
 
-  return result
+  return result;
 }
 
 export function stringifySupportedFeatures(features) {
   return Object.entries(features)
     .reduce((acc, [key, value]) => {
       if (value) {
-        acc.push(key)
+        acc.push(key);
       }
 
-      return acc
+      return acc;
     }, [])
-    .join(',')
+    .join(',');
 }
 
-export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

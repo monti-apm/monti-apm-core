@@ -10,7 +10,7 @@ export const CoreEvent = {
   WEBSOCKET_BACKOFF_READY: 'websocket:backoff:ready',
   WEBSOCKET_BACKOFF_FAIL: 'websocket:backoff:fail',
   WEBSOCKET_BACKOFF_RESET: 'websocket:backoff:reset',
-}
+};
 
 export enum WebSocketEvent {
   OPEN = 'open',
@@ -55,4 +55,4 @@ export enum Feature {
 
 export const SupportedFeatures = {
   [Feature.WEBSOCKETS]: true,
-}
+};
