@@ -1,0 +1,7 @@
+require:
+  - '@swc/register'
+watch: true
+file:
+  - 'scripts/mocha-setup.js'
+extension: [ 'js', 'cjs', 'mjs', 'ts', 'jsx', 'tsx' ]
+timeout: 10000

@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { afterEach, beforeEach, describe, it } from 'mocha'
-import server, { connections, wss } from './_server.js'
-import Kadira from '../index.ts'
+import server, { connections, wss } from './tests/server.js'
+import Kadira from './index.ts'
 import { expect } from 'chai'
 import { CoreEvent, EngineEvent } from '@/constants'
 import { sleep } from '@/utils'

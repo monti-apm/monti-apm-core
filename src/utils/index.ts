@@ -1,7 +1,7 @@
-import retry, { ByPassRetryError } from './retry'
+import retry, { ByPassRetryError } from '../retry'
 import axios, { AxiosResponse } from 'axios'
 import debug from 'debug'
-import { HttpMethod, SupportedFeatures } from './constants'
+import { HttpMethod, SupportedFeatures } from '@/constants'
 
 const logger = debug('kadira-core:transport')
 
