@@ -11,7 +11,8 @@
       "@/*": [
         "src/*"
       ]
-    }
+    },
+    "target": "es5"
   },
   "module": {
     "type": "commonjs"
