@@ -166,10 +166,10 @@ export class Kadira extends EventEmitter2 {
   }
 
   get(
-    path,
-    options?: {
-      noRetry: boolean
-    },
+    path: string,
+    options: {
+      noRetry?: boolean
+    } = {},
   ) {
     const url = this._options.endpoint + path
     const params = {
