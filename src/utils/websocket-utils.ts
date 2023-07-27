@@ -5,11 +5,14 @@ import { sleep } from '@/utils';
 
 const maxAttempts = 4;
 
-export function getWsUrl(url) {
+export function getWsUrl(url: string) {
   return url.replace('https://', 'wss://').replace('http://', 'ws://');
 }
 
-export function connectWebSocket(url, headers): Promise<WebSocket.Client> {
+export function connectWebSocket(
+  url: string,
+  headers: Record<string, string>,
+): Promise<WebSocket.Client> {
   return new Promise((resolve, reject) => {
     const errorHandler = (event) => {
       reject(event);
