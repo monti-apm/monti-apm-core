@@ -66,6 +66,7 @@
     "yarn": "1.22.17"
   },
   "resolutions": {
-    "string-width": "4.2.3"
+    "string-width": "4.2.3",
+    "wrap-ansi": "7.0.0"
   }
 }
