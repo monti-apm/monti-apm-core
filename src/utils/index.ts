@@ -1,4 +1,4 @@
-import retry, { ByPassRetryError } from '../retry';
+import retry, { ByPassRetryError, RetryOptions } from '../retry';
 import axios, { AxiosResponse } from 'axios';
 import debug from 'debug';
 import { HttpMethod, SupportedFeatures } from '@/constants';
@@ -25,7 +25,7 @@ export function axiosRetry(
     headers?: Record<string, string | undefined>;
     noRetry?: boolean;
   },
-  retryOptions: {} | undefined,
+  retryOptions?: RetryOptions,
 ): Promise<AxiosResponse> {
   let retryEnabled = true;
 

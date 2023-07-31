@@ -17,15 +17,16 @@ import { hostname } from 'os';
 import { v4 as uuid } from 'uuid';
 import EventEmitter2 from 'eventemitter2';
 import { connectWithBackoff } from './utils/websocket-utils';
-import WebSocket from 'faye-websocket'
-import {merge} from "remeda";
+import WebSocket from 'faye-websocket';
+import { merge } from 'remeda';
+import { RetryOptions } from '@/retry';
 
 const logger = debug('kadira-core:transport');
 
 export type Job = {
   id: string;
   [key: string]: any;
-}
+};
 
 const defaultOptions = {
   appId: '',
@@ -48,9 +49,7 @@ export type Options = {
   hostname: string;
   clockSyncInterval: number;
   dataFlushInterval: number;
-  retryOptions: {
-    maxRetries: number;
-  };
+  retryOptions: RetryOptions;
 };
 
 // exporting this for if we need to get this as a NPM module.
@@ -72,7 +71,7 @@ export class Kadira extends EventEmitter2 {
   constructor(options: Options) {
     super();
 
-    this._options = merge(this._options, options)
+    this._options = merge(this._options, options);
 
     this._headers = {
       'content-type': ContentType.JSON,
@@ -99,16 +98,17 @@ export class Kadira extends EventEmitter2 {
     };
   }
 
-  connect() {
+  async connect() {
     logger('connecting with', this._options);
-    return this._checkAuth()
-      .then(() => this._clock.sync())
-      .then(() => {
-        this._clockSyncInterval = setInterval(
-          () => this._clock.sync(),
-          this._options.clockSyncInterval,
-        );
-      });
+
+    await this._checkAuth();
+
+    await this._clock.sync();
+
+    this._clockSyncInterval = setInterval(
+      () => this._clock.sync(),
+      this._options.clockSyncInterval,
+    );
   }
 
   disconnect() {
@@ -118,7 +118,7 @@ export class Kadira extends EventEmitter2 {
     this.emit(CoreEvent.DISCONNECT);
   }
 
-  getJob(id) {
+  getJob(id: string) {
     const data = { action: 'get', params: {} };
     Object.assign(data.params, { id });
 
@@ -132,7 +132,7 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  updateJob(id, diff) {
+  updateJob(id: string, diff: Record<string, any>) {
     const data = { action: 'set', params: {} };
     Object.assign(data.params, diff, { id });
 
@@ -146,8 +146,7 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  // send the given payload to the server
-  sendData(_payload) {
+  sendData(_payload: Record<string, any>) {
     // Needs to be inside a promise so the errors thrown below it
     // are properly caught.
     return new Promise((resolve) => {
@@ -274,10 +273,11 @@ export class Kadira extends EventEmitter2 {
     return res.data;
   }
 
-  // communicates with the server with http
-  // Also handles response http status codes and retries
-  _send(url, params) {
-    return axiosRetry(
+  async _send(
+    url: string,
+    params: { data?: any; headers: any; noRetry?: boolean | undefined },
+  ) {
+    const res = await axiosRetry(
       url,
       {
         ...params,
@@ -287,7 +287,8 @@ export class Kadira extends EventEmitter2 {
         },
       },
       this._options.retryOptions,
-    ).then((res) => res.data);
+    );
+    return res.data;
   }
 }
 

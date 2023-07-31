@@ -1,5 +1,6 @@
 // reject the promise with this error when run out of retry attmpts.
 import { sleep } from '@/utils';
+import { merge } from 'remeda';
 
 export class MaxRetryError extends Error {
   constructor(message: string) {
@@ -16,6 +17,11 @@ export class ByPassRetryError extends Error {
   }
 }
 
+export type RetryOptions = {
+  maxRetries?: number;
+  timeFunction?: (i: number) => number;
+};
+
 // retry([options], fn)
 // retry module takes a `promiser` function as the main argument.
 // The promiser function should return a promise which will be used
@@ -25,14 +31,14 @@ export class ByPassRetryError extends Error {
 // with the special error `ERR_ENDRETRY`.
 export default function retry<T = any>(
   getPromise: () => Promise<T>,
-  _options = {},
+  _options?: Partial<RetryOptions>,
 ): Promise<T> {
-  const options = Object.assign(
+  const options = merge(
     {
       maxRetries: 3,
-      timeFunction: (i) => 100 * Math.pow(i, 2),
+      timeFunction: (i: number) => 100 * Math.pow(i, 2),
     },
-    _options || {},
+    _options,
   );
 
   // The retry module returns a promise which will end when the task
