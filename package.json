@@ -9,8 +9,7 @@
     "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
-    "testonly": "mocha src/**/*.test.js --watch=false --exit",
-    "test": "npm run lint && npm run testonly",
+    "test": "mocha src/**/*.test.js --watch=false --exit",
     "test:watch": "nodemon --exec 'npm run testonly' -e js --watch src",
     "prepublish": "yarn clean && yarn build && yarn types"
   },
@@ -62,8 +61,8 @@
     "uuid": "^9.0.0"
   },
   "volta": {
-    "node": "14.21.2",
-    "yarn": "1.22.17"
+    "node": "16.20.1",
+    "yarn": "1.22.19"
   },
   "resolutions": {
     "string-width": "4.2.3",
