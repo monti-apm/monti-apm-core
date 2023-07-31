@@ -47,5 +47,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm ci
+      # npm ci is not supported on node 4.x
+      - run: npm install
       - run: npm run test:dist
