@@ -47,8 +47,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: jq 'del(.devDependencies["@swc/cli"])' package.json > package.json
-      - run: jq 'del(.devDependencies["@swc/core"])' package.json > package.json
+      - run: echo $(jq 'del(.devDependencies["@swc/cli"])' package.json) > package.json
+      - run: echo $(jq 'del(.devDependencies["@swc/core"])' package.json) > package.json
+      - run: echo $(jq 'del(.devDependencies["@swc/register"])' package.json) > package.json
 
       # npm ci is not supported on node 4.x
       - run: npm install
