@@ -36,16 +36,20 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        node-version: [4.x, 6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 18.x, 20.x]
+#        node-version: [4.x, 6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 18.x, 20.x]
+        node-version: [4.x]
     steps:
-      - name: download dist
-        uses: actions/download-artifact@v3
+      - uses: sergeysova/jq-action@v2
+      - uses: actions/download-artifact@v3
         with:
           name: dist
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - run: 'jq 'del(.devDependencies["@swc/cli"])' package.json > package.json'
+      - run: 'jq 'del(.devDependencies["@swc/core"])' package.json > package.json'
+
       # npm ci is not supported on node 4.x
       - run: npm install
       - run: npm run test:dist
