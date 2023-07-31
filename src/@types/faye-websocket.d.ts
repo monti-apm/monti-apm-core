@@ -35,5 +35,7 @@ declare module 'faye-websocket' {
     ): void;
 
     emit(type: string): void;
+
+    removeAllListeners(type?: string): void;
   }
 }

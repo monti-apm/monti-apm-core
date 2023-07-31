@@ -23,7 +23,7 @@ export default class Clock {
     return this._clientTS() + this._diff;
   }
 
-  fixTime(timestamp) {
+  fixTime(timestamp: number) {
     // `timestamp` on Kadira server
     return timestamp + this._diff;
   }
@@ -67,13 +67,17 @@ export default class Clock {
       });
   }
 
-  _fetchTime() {
-    return axios.get(this._options.endpoint).then((res) => {
-      if (res.status !== 200) {
-        throw new Error('request failed: ' + res.status);
-      }
+  async _fetchTime() {
+    if (!this._options.endpoint) {
+      throw new Error('endpoint is not set');
+    }
 
-      return parseInt(res.data, 10);
-    });
+    const res = await axios.get(this._options.endpoint);
+
+    if (res.status !== 200) {
+      throw new Error('request failed: ' + res.status);
+    }
+
+    return parseInt(res.data, 10);
   }
 }

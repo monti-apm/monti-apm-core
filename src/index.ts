@@ -17,8 +17,15 @@ import { hostname } from 'os';
 import { v4 as uuid } from 'uuid';
 import EventEmitter2 from 'eventemitter2';
 import { connectWithBackoff } from './utils/websocket-utils';
+import WebSocket from 'faye-websocket'
+import {merge} from "remeda";
 
 const logger = debug('kadira-core:transport');
+
+export type Job = {
+  id: string;
+  [key: string]: any;
+}
 
 const defaultOptions = {
   appId: '',
@@ -33,7 +40,7 @@ const defaultOptions = {
   },
 };
 
-export type Options = Partial<{
+export type Options = {
   appId: string;
   appSecret: string;
   agentVersion: string;
@@ -44,28 +51,29 @@ export type Options = Partial<{
   retryOptions: {
     maxRetries: number;
   };
-}>;
+};
 
 // exporting this for if we need to get this as a NPM module.
 export class Kadira extends EventEmitter2 {
   _id = uuid();
   _supportedFeatures = SupportedFeatures;
   _allowedFeatures = {};
-  _jobQueue = [];
+  _jobQueue: Job[] = [];
   _instancedAt = Date.now();
 
-  _ws = null;
+  _ws: WebSocket.Client | null = null;
 
-  _options: Options = {};
-  _headers: Record<string, string> = {};
+  _options: Options = defaultOptions;
+  _headers: Record<string, string | undefined> = {};
 
   _clock: Clock;
-  _clockSyncInterval: NodeJS.Timeout | null = null;
+  _clockSyncInterval: NodeJS.Timeout | undefined;
 
-  constructor(_options: Options = {}) {
+  constructor(options: Options) {
     super();
 
-    this._options = Object.assign({}, defaultOptions, _options);
+    this._options = merge(this._options, options)
+
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
@@ -79,8 +87,6 @@ export class Kadira extends EventEmitter2 {
     this._clock = new Clock({
       endpoint: this._options.endpoint + '/simplentp/sync',
     });
-
-    this._clockSyncInterval = null;
   }
 
   get _websocketHeaders() {
@@ -222,12 +228,12 @@ export class Kadira extends EventEmitter2 {
         case EngineEvent.JOB_CREATED:
           this._handleJobEvent(data);
       }
-    } catch (error) {
-      console.log(
+    } catch (error: any) {
+      console.error(
         'Monti APM: Failed to parse message',
         JSON.stringify(message.data),
       );
-      console.log(error.stack);
+      console.error(error.stack);
     }
   }
 
@@ -240,7 +246,7 @@ export class Kadira extends EventEmitter2 {
       await connectWithBackoff(this);
     } catch (e) {
       console.error('Monti APM WebSocket: Failed to connect');
-      this._ws = undefined;
+      this._ws = null;
     }
   }
 

@@ -1,4 +1,6 @@
 // reject the promise with this error when run out of retry attmpts.
+import {sleep} from "@/utils";
+
 export class MaxRetryError extends Error {
   constructor(message) {
     super(message);
@@ -47,18 +49,18 @@ export default function retry<T = any>(
       }
     };
 
-    const attempt = function (lastError = null) {
+    const attempt = function (lastError: any = null) {
       // Does not include the first attempt to avoid confusion as the
       // option is `max[Re]tries`.
       if (count++ > options.maxRetries) {
-        const message = `Reached maximum retry limit for ${lastError.message}`;
+        const message = `Reached maximum retry limit for ${lastError?.message ?? 'unknown error'}`;
         const err = new MaxRetryError(message);
         return reject(err);
       }
 
       // stop a few milliseconds between retries
       const millis = options.timeFunction(count);
-      delay(millis)
+      sleep(millis)
         .then(() => {
           return getPromise();
         })
@@ -67,11 +69,5 @@ export default function retry<T = any>(
 
     // start!
     attempt();
-  });
-}
-
-function delay(millis) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, millis);
   });
 }

@@ -758,7 +758,7 @@ debug@4.3.4, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
   dependencies:
     ms "2.1.2"
 
-debug@^3.2.6, debug@^3.2.7:
+debug@^3.2.7:
   version "3.2.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.2.7.tgz#72580b7e9145fb39b6676f9c5e5fb100b934179a"
   integrity sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==
@@ -2132,6 +2132,11 @@ readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
+
+remeda@^1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/remeda/-/remeda-1.24.0.tgz#3eafd5fedba0f54c70823a93ca29a6d0a5d5cf2e"
+  integrity sha512-tjLxwU4yLtvX8yHlePnE7CdQXRe2pKatlVY+AunqAQV5t9FNw1yuiIAqKpu6zevd+No5LQHEJ/HK3r3ZFK7KXg==
 
 require-directory@^2.1.1:
   version "2.1.1"

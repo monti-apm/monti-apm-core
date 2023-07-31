@@ -5,7 +5,11 @@ import { HttpMethod, SupportedFeatures } from '@/constants';
 
 const logger = debug('kadira-core:transport');
 
-export function getAxiosConfig(params) {
+export function getAxiosConfig(params: {
+  headers?: Record<string, string | undefined> | undefined;
+  noRetry?: boolean | undefined;
+  method?: any;
+}) {
   return {
     ...params,
     // Axios defaults to 10mb. Increases limit to 100mb.
@@ -15,7 +19,10 @@ export function getAxiosConfig(params) {
   };
 }
 
-export function axiosRetry(url, params, retryOptions): Promise<AxiosResponse> {
+export function axiosRetry(url: string, params: {
+  headers?: Record<string, string | undefined>;
+  noRetry?: boolean;
+}, retryOptions: {} | undefined): Promise<AxiosResponse> {
   let retryEnabled = true;
 
   if (params.noRetry) {
@@ -62,11 +69,11 @@ export function axiosRetry(url, params, retryOptions): Promise<AxiosResponse> {
   }, retryOptions);
 }
 
-export function parseAllowedFeaturesHeader(header) {
+export function parseAllowedFeaturesHeader(header: string) {
   const result = {};
 
   if (header) {
-    header.split(',').map((feature) => {
+    header.split(',').map((feature: string | number) => {
       if (SupportedFeatures[feature]) {
         result[feature] = true;
       }
@@ -76,9 +83,9 @@ export function parseAllowedFeaturesHeader(header) {
   return result;
 }
 
-export function stringifySupportedFeatures(features) {
+export function stringifySupportedFeatures(features: Record<string, boolean>) {
   return Object.entries(features)
-    .reduce((acc, [key, value]) => {
+    .reduce((acc: string[], [key, value]) => {
       if (value) {
         acc.push(key);
       }
@@ -88,4 +95,4 @@ export function stringifySupportedFeatures(features) {
     .join(',');
 }
 
-export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

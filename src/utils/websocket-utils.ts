@@ -2,6 +2,7 @@ import WebSocket from 'faye-websocket';
 import { BackoffEvent, CoreEvent, WebSocketEvent } from '@/constants';
 import * as backoff from 'backoff';
 import { sleep } from '@/utils';
+import Kadira from "@/index";
 
 const maxAttempts = 4;
 
@@ -11,10 +12,10 @@ export function getWsUrl(url: string) {
 
 export function connectWebSocket(
   url: string,
-  headers: Record<string, string>,
+  headers: Record<string, string | number>,
 ): Promise<WebSocket.Client> {
   return new Promise((resolve, reject) => {
-    const errorHandler = (event) => {
+    const errorHandler = (event: any) => {
       reject(event);
     };
 
@@ -47,7 +48,7 @@ export function connectWebSocket(
   });
 }
 
-export async function connectWithRetry(core, attempts = maxAttempts) {
+export async function connectWithRetry(core: Kadira, attempts = maxAttempts) {
   for (let i = 0; i < attempts; i++) {
     try {
       if (core) {
@@ -72,7 +73,7 @@ export async function connectWithRetry(core, attempts = maxAttempts) {
       }, 0);
 
       return ws;
-    } catch (error) {
+    } catch (error: any) {
       if (error.code !== 1006) {
         console.error(error);
       }
@@ -89,12 +90,14 @@ export async function connectWithRetry(core, attempts = maxAttempts) {
       setTimeout(resolve, connectWithRetry._timeout),
     );
   }
+
+  return null;
 }
 
 connectWithRetry._timeout = 5000;
 
 export async function connectWithBackoff(core) {
-  let ws = null;
+  let ws: WebSocket.Client | null = null;
 
   const _backoff = backoff.exponential({
     randomisationFactor: 1,
@@ -124,7 +127,7 @@ export async function connectWithBackoff(core) {
 
       _backoff.reset();
 
-      ws.on(WebSocketEvent.CLOSE, (event) => {
+      ws?.on(WebSocketEvent.CLOSE, (event) => {
         _backoff.backoff(event);
       });
     } catch (error) {
