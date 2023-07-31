@@ -16,7 +16,7 @@
     "test": "mocha src/**/*.test.js --watch=false --exit",
     "test:watch": "nodemon --exec 'npm run test' -e js --watch src",
 
-    "prepublish": "npm run clean && npm run build && npm run types"
+    "prepublishOnly": "npm run clean && npm run build && npm run types"
   },
   "repository": {
     "type": "git",
