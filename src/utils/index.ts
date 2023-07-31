@@ -19,10 +19,14 @@ export function getAxiosConfig(params: {
   };
 }
 
-export function axiosRetry(url: string, params: {
-  headers?: Record<string, string | undefined>;
-  noRetry?: boolean;
-}, retryOptions: {} | undefined): Promise<AxiosResponse> {
+export function axiosRetry(
+  url: string,
+  params: {
+    headers?: Record<string, string | undefined>;
+    noRetry?: boolean;
+  },
+  retryOptions: {} | undefined,
+): Promise<AxiosResponse> {
   let retryEnabled = true;
 
   if (params.noRetry) {
@@ -95,4 +99,5 @@ export function stringifySupportedFeatures(features: Record<string, boolean>) {
     .join(',');
 }
 
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));

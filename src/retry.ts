@@ -1,8 +1,8 @@
 // reject the promise with this error when run out of retry attmpts.
-import {sleep} from "@/utils";
+import { sleep } from '@/utils';
 
 export class MaxRetryError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.message = message;
   }
@@ -10,7 +10,7 @@ export class MaxRetryError extends Error {
 
 // reject the promise with this error (in promiser) to stop retrying.
 export class ByPassRetryError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.message = message;
   }
@@ -53,7 +53,9 @@ export default function retry<T = any>(
       // Does not include the first attempt to avoid confusion as the
       // option is `max[Re]tries`.
       if (count++ > options.maxRetries) {
-        const message = `Reached maximum retry limit for ${lastError?.message ?? 'unknown error'}`;
+        const message = `Reached maximum retry limit for ${
+          lastError?.message ?? 'unknown error'
+        }`;
         const err = new MaxRetryError(message);
         return reject(err);
       }

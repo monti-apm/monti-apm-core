@@ -2,7 +2,7 @@ import WebSocket from 'faye-websocket';
 import { BackoffEvent, CoreEvent, WebSocketEvent } from '@/constants';
 import * as backoff from 'backoff';
 import { sleep } from '@/utils';
-import Kadira from "@/index";
+import Kadira from '@/index';
 
 const maxAttempts = 4;
 
