@@ -11,7 +11,7 @@
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
 
-    "test:dist": "mocha dist/**/*.test.js --exit",
+    "test:dist": "mocha 'dist/**/*.test.js' --exit",
 
     "test": "mocha src/**/*.test.js --require=@swc/register --exit",
     "test:watch": "nodemon --exec 'npm run test' -e js --watch src",

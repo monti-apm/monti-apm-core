@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
 #        node-version: [4.x, 6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 18.x, 20.x]
-        node-version: [4.x]
+        node-version: [4.x, 6.x, 8.x, 10.x]
     steps:
       - uses: sergeysova/jq-action@v2
       - uses: actions/download-artifact@v3
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      # npm ci is not supported on node 4.x
       - run: npm install --production
       - run: npm install --save-dev mocha@5.2.0 ws@2.3.1 chai
+      - run: ls -lah dist
       - run: npm run test:dist
