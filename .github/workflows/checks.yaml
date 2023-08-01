@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
       - run: npm ci
       - run: npm run build
@@ -36,8 +36,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-#        node-version: [4.x, 6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 18.x, 20.x]
-        node-version: [4.x, 6.x, 8.x, 10.x]
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
@@ -47,7 +46,5 @@ jobs:
         with:
           name: dist
           path: dist
-      - run: npm install --production
-      - run: npm install --save-dev mocha@5.2.0 ws@2.3.1 chai express
-      - run: ls -lah
+      - run: npm install
       - run: npm run test:dist

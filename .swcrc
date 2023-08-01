@@ -14,7 +14,9 @@
     }
   },
   "env": {
-    "targets": "node 4"
+    "targets": {
+      "node": "12"
+    },
   },
   "module": {
     "type": "commonjs"
