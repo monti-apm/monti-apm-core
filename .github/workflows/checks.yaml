@@ -48,6 +48,6 @@ jobs:
           name: dist
           path: dist
       - run: npm install --production
-      - run: npm install --save-dev mocha@5.2.0 ws@2.3.1 chai
+      - run: npm install --save-dev mocha@5.2.0 ws@2.3.1 chai express
       - run: ls -lah
       - run: npm run test:dist
