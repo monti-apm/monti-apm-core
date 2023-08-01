@@ -47,13 +47,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: echo $(jq 'del(.devDependencies["@swc/cli"])' package.json) > package.json
-      - run: echo $(jq 'del(.devDependencies["@swc/core"])' package.json) > package.json
-      - run: echo $(jq 'del(.devDependencies["@swc/register"])' package.json) > package.json
-      - run: echo $(jq 'del(.devDependencies["glob"])' package.json) > package.json
-      - run: echo $(jq 'del(.devDependencies["typescript"])' package.json) > package.json
-      - run: echo $(jq 'del(.devDependencies["nodemon"])' package.json) > package.json
-
       # npm ci is not supported on node 4.x
-      - run: npm install
+      - run: npm install --production
       - run: npm run test:dist
+      - run: npm install --save-dev mocha@6.2.3 ws chai
