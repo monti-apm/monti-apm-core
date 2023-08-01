@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: ./dist
+          path: dist
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -40,14 +40,14 @@ jobs:
         node-version: [4.x, 6.x, 8.x, 10.x]
     steps:
       - uses: sergeysova/jq-action@v2
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist
       - run: npm install --production
       - run: npm install --save-dev mocha@5.2.0 ws@2.3.1 chai
-      - run: ls -lah dist
+      - run: ls -lah
       - run: npm run test:dist
