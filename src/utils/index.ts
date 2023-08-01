@@ -1,7 +1,7 @@
-import retry, { ByPassRetryError, RetryOptions } from '../retry';
-import axios, { AxiosResponse } from 'axios';
+import retry, {ByPassRetryError, RetryOptions} from '../retry';
+import axios, {AxiosResponse} from 'axios';
 import debug from 'debug';
-import { HttpMethod, SupportedFeatures } from '@/constants';
+import {HttpMethod, SupportedFeatures} from '@/constants';
 
 const logger = debug('kadira-core:transport');
 
@@ -88,7 +88,7 @@ export function parseAllowedFeaturesHeader(header: string) {
 }
 
 export function stringifySupportedFeatures(features: Record<string, boolean>) {
-  return Object.entries(features)
+  return entries(features)
     .reduce((acc: string[], [key, value]) => {
       if (value) {
         acc.push(key);
@@ -101,3 +101,6 @@ export function stringifySupportedFeatures(features: Record<string, boolean>) {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+export const entries = <T extends Record<string, any>>(obj: T) =>
+    Object.keys(obj).map((key) => [key, obj[key]] as [keyof T, T[keyof T]]);
