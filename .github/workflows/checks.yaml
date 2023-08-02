@@ -12,9 +12,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - run: yarn run lint
   build:
     runs-on: ubuntu-latest
     steps:
@@ -22,9 +22,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - run: yarn run build
       - name: upload dist
         uses: actions/upload-artifact@v3
         with:
@@ -46,5 +46,5 @@ jobs:
         with:
           name: dist
           path: dist
-      - run: npm install
-      - run: npm run test:dist
+      - run: yarn install
+      - run: yarn run test:dist
