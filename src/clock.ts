@@ -52,19 +52,13 @@ export default class Clock {
     return new Date().getTime();
   }
 
-  _syncOnce() {
-    let startTS;
-
-    return this._fetchTime()
-      .then(() => {
-        startTS = this._clientTS();
-        return this._fetchTime();
-      })
-      .then((serverTS) => {
-        const latency = (this._clientTS() - startTS) / 2;
-        this._diff = serverTS - latency - startTS;
-        this.ready = true;
-      });
+  async _syncOnce() {
+    await this._fetchTime();
+    const startTS = this._clientTS();
+    const serverTS = await this._fetchTime();
+    const latency = (this._clientTS() - startTS) / 2;
+    this._diff = serverTS - latency - startTS;
+    this.ready = true;
   }
 
   async _fetchTime() {
