@@ -187,7 +187,7 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  sendStream(path, stream) {
+  sendStream(path: string, stream: ReadableStream) {
     const url = this._options.endpoint + path;
     const params = {
       data: stream,

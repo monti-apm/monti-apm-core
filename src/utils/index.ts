@@ -1,15 +1,11 @@
 import retry, { ByPassRetryError, RetryOptions } from '../retry';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
 import { HttpMethod, SupportedFeatures } from '@/constants';
 
 const logger = debug('kadira-core:transport');
 
-export function getAxiosConfig(params: {
-  headers?: Record<string, string | undefined> | undefined;
-  noRetry?: boolean | undefined;
-  method?: any;
-}) {
+export function getAxiosConfig(params: AxiosRequestConfig): AxiosRequestConfig {
   return {
     ...params,
     // Axios defaults to 10mb. Increases limit to 100mb.
@@ -22,9 +18,8 @@ export function getAxiosConfig(params: {
 export function axiosRetry(
   url: string,
   params: {
-    headers?: Record<string, string | undefined>;
     noRetry?: boolean;
-  },
+  } & AxiosRequestConfig<any>,
   retryOptions?: RetryOptions,
 ): Promise<AxiosResponse> {
   let retryEnabled = true;
