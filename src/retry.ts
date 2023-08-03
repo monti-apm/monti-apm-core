@@ -1,16 +1,20 @@
-// reject the promise with this error when run out of retry attmpts.
 import { sleep } from '@/utils';
 import { merge } from 'remeda';
 
 export class MaxRetryError extends Error {
+  /**
+   * Reject the promise with this error when run out of retry attempts.
+   */
   constructor(message: string) {
     super(message);
     this.message = message;
   }
 }
 
-// reject the promise with this error (in promiser) to stop retrying.
 export class ByPassRetryError extends Error {
+  /**
+   * reject the promise with this error (in promiser) to stop retrying.
+   */
   constructor(message: string) {
     super(message);
     this.message = message;
@@ -22,13 +26,14 @@ export type RetryOptions = {
   timeFunction?: (i: number) => number;
 };
 
-// retry([options], fn)
-// retry module takes a `promiser` function as the main argument.
-// The promiser function should return a promise which will be used
-// to decide whether the task ran successfully. If the task failed
-// it will retry by running the `promiser` function again. Retry will
-// stop when it has tried `maxRetries` times or if the promise fails
-// with the special error `ERR_ENDRETRY`.
+/**
+ * Retry module takes a `promiser` function as the main argument.
+ * The `promiser` function should return a promise which will be used
+ * to decide whether the task ran successfully. If the task failed,
+ * it will retry by running the `promiser` function again. Retry will
+ * stop when it has tried `maxRetries` times or if the promise fails
+ * with the special error `ERR_ENDRETRY`.
+ */
 export default function retry<T = any>(
   getPromise: () => Promise<T>,
   _options?: Partial<RetryOptions>,
