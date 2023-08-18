@@ -1,17 +1,17 @@
 {
-  "parser": "babel-eslint",
-
+  "parser": "@babel/eslint-parser",
   "plugins": [
     "babel"
   ],
-
   "env": {
     "es6": true,
     "node": true
   },
-
   "rules": {
-    "array-bracket-spacing": [2, "always"],
+    "array-bracket-spacing": [
+      2,
+      "always"
+    ],
     "arrow-spacing": 2,
     "block-scoped-var": 0,
     "brace-style": [2, "1tbs", {"allowSingleLine": true}],

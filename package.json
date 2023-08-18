@@ -6,18 +6,15 @@
   "options": {
     "mocha": "--require scripts/mocha-bootload lib/**/__tests__/**/*.js"
   },
-  "babel": {
-    "optional": [
-      "runtime",
-      "es7.asyncFunctions"
-    ]
-  },
   "scripts": {
     "prepare": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist",
+    "watch": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist --watch",
     "lint": "./node_modules/.bin/eslint ./lib --cache",
     "lintfix": "./node_modules/.bin/eslint ./lib --fix",
-    "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js",
-    "test": "npm run lint && npm run testonly"
+    "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js --exit",
+    "test": "npm run lint && npm run testonly",
+    "test:watch": "nodemon --exec 'npm run testonly' -e js --watch lib",
+    "test:debug": "DEBUG=kadira-core:* npm run test:watch"
   },
   "repository": {
     "type": "git",
@@ -34,20 +31,28 @@
   },
   "homepage": "https://github.com/monti-apm/monti-apm-core#readme",
   "devDependencies": {
-    "babel-cli": "6.x.x",
-    "babel-core": "6.x.x",
-    "babel-eslint": "^10.1.0",
-    "babel-polyfill": "6.x.x",
-    "babel-preset-es2015": "6.x.x",
-    "babel-preset-stage-2": "6.x.x",
-    "chai": "^4.2.0",
-    "eslint": "^6.8.0",
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.3",
+    "@babel/eslint-parser": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/register": "^7.21.0",
+    "@types/chai": "^4.3.4",
+    "chai": "^4.3.7",
+    "eslint": "^8.37.0",
     "eslint-plugin-babel": "^5.3.0",
     "express": "^4.17.1",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "nodemon": "^2.0.21",
+    "ws": "^8.13.0"
   },
   "dependencies": {
-    "axios": "^0.21.4",
-    "debug": "^3.2.6"
+    "axios": "^1.3.4",
+    "debug": "^3.2.6",
+    "eventemitter2": "^6.4.9",
+    "faye-websocket": "^0.11.4"
+  },
+  "volta": {
+    "node": "12.22.12",
+    "npm": "6.14.17"
   }
 }
