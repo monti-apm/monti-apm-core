@@ -3,18 +3,17 @@
   "version": "1.7.5",
   "description": "Monti APM Core API",
   "main": "./dist/",
-  "options": {
-    "mocha": "--require scripts/mocha-bootload lib/**/__tests__/**/*.js"
-  },
   "scripts": {
-    "prepare": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist",
-    "watch": "./node_modules/.bin/babel lib --ignore __tests__ --out-dir ./dist --watch",
-    "lint": "./node_modules/.bin/eslint ./lib --cache",
-    "lintfix": "./node_modules/.bin/eslint ./lib --fix",
-    "testonly": "mocha --require scripts/mocha-bootload lib/**/__tests__/**/*.js --exit",
-    "test": "npm run lint && npm run testonly",
-    "test:watch": "nodemon --exec 'npm run testonly' -e js --watch lib",
-    "test:debug": "DEBUG=kadira-core:* npm run test:watch"
+    "clean": "rimraf dist",
+    "build": "swc src --out-dir=dist",
+    "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "lint": "eslint src --cache",
+    "lintfix": "eslint src --fix",
+    "test:dist": "mocha 'dist/**/*.test.js' --exit --watch=false",
+    "test": "mocha src/**/*.test.js --require=@swc/register --exit --watch=false",
+    "test:watch": "nodemon --exec 'npm run test' -e js --watch src",
+    "test:debug": "DEBUG=kadira-core:* npm run test:watch",
+    "prepublishOnly": "npm run clean && npm run build && npm run types"
   },
   "repository": {
     "type": "git",
@@ -24,35 +23,44 @@
     "kadira",
     "monti apm"
   ],
-  "author": "Kadira Inc.",
+  "author": "Monti APM",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/monti-apm/monti-apm-core/issues"
   },
   "homepage": "https://github.com/monti-apm/monti-apm-core#readme",
   "devDependencies": {
-    "@babel/cli": "^7.21.0",
-    "@babel/core": "^7.21.3",
-    "@babel/eslint-parser": "^7.21.3",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/register": "^7.21.0",
+    "@swc/cli": "^0.1.62",
+    "@swc/core": "^1.3.71",
+    "@swc/register": "^0.1.10",
     "@types/chai": "^4.3.4",
-    "chai": "^4.3.7",
-    "eslint": "^8.37.0",
-    "eslint-plugin-babel": "^5.3.0",
-    "express": "^4.17.1",
-    "mocha": "^5.2.0",
-    "nodemon": "^2.0.21",
-    "ws": "^8.13.0"
+    "@types/debug": "^4.1.8",
+    "@types/mocha": "^10.0.1",
+    "@types/uuid": "^9.0.2",
+    "@types/websocket": "^1.0.5",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
+    "chai": "4.3.7",
+    "eslint": "8.45.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "express": "4.18.2",
+    "glob": "^7.1.3",
+    "mocha": "10.2.0",
+    "nodemon": "2.0.21",
+    "prettier": "2.8.8",
+    "rimraf": "4.4.1",
+    "typescript": "4.9.5",
+    "ws": "8.13.0"
   },
   "dependencies": {
     "axios": "^1.3.4",
     "debug": "^3.2.6",
     "eventemitter2": "^6.4.9",
-    "faye-websocket": "^0.11.4"
+    "faye-websocket": "^0.11.4",
+    "remeda": "^1.25.1"
   },
   "volta": {
-    "node": "12.22.12",
-    "npm": "6.14.17"
+    "node": "20.5.0"
   }
 }

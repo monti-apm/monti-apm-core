@@ -78,39 +78,39 @@ let latestJobs = {};
 let latestHeaders = {};
 
 export default {
-  start: callback => {
+  start: (callback) => {
     server.listen(8000, callback);
   },
-  stop: callback => {
-    connections.forEach(ws => ws.close());
+  stop: (callback) => {
+    connections.forEach((ws) => ws.close());
     server.close(callback);
   },
   async startAsync() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.start(resolve);
     });
   },
   async stopAsync() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.stop(resolve);
     });
   },
   getCount: () => requestCount,
-  setCount: n => {
+  setCount: (n) => {
     requestCount = n;
   },
   getData: () => latestData,
-  setData: d => {
+  setData: (d) => {
     latestData = d;
   },
   getJobs: () => latestJobs,
-  setJobs: d => {
+  setJobs: (d) => {
     latestJobs = d;
   },
   getHeaders: () => latestHeaders,
-  setHeaders: headers => {
+  setHeaders: (headers) => {
     latestHeaders = headers;
-  }
+  },
 };
 
 function authenticate(req) {
