@@ -4,8 +4,6 @@
   "description": "Monti APM Core API",
   "main": "./dist/",
   "scripts": {
-    "prepublishOnly": "npm run clean && npm run build && npm run types",
-    "test:debug": "DEBUG=kadira-core:* npm run test:watch"
     "clean": "rimraf dist",
     "build": "swc src --out-dir=dist",
     "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
@@ -14,6 +12,7 @@
     "test:dist": "mocha 'dist/**/*.test.js' --exit --watch=false",
     "test": "mocha src/**/*.test.js --require=@swc/register --exit --watch=false",
     "test:watch": "nodemon --exec 'npm run test' -e js --watch src",
+    "test:debug": "DEBUG=kadira-core:* npm run test:watch",
     "prepublishOnly": "npm run clean && npm run build && npm run types"
   },
   "repository": {
