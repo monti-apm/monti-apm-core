@@ -5,21 +5,22 @@ import EventEmitter2 from 'eventemitter2';
 
 export const WebSocketEvents = new EventEmitter2();
 
-export function getWsUrl(url) {
+export function getWsUrl(url: string) {
   return url.replace('https://', 'wss://').replace('http://', 'ws://');
 }
 
-export function connectWebSocket(url, headers, onMessage) {
+export function connectWebSocket(
+  url: string,
+  headers: Record<string, string>,
+  onMessage: (data: string) => void = () => ({}),
+): Promise<WebSocket.Client> {
   return new Promise((resolve, reject) => {
-    const errorHandler = (event) => {
+    const errorHandler = (event: any) => {
       reject(event);
     };
 
     WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_ATTEMPT);
 
-    /**
-     * @type {WebSocket} Not the same but the signature is similar to this type.
-     */
     const ws = new WebSocket.Client(getWsUrl(url).concat('/websocket'), null, {
       headers,
     });
@@ -72,15 +73,14 @@ export const once = async (ws, event) =>
 export const MAX_DELAY = 60000;
 
 export function persistentConnectWebSocket(
-  core,
-  endpoint,
-  headers,
-  onMessage,
-  timeFunction = (i) =>
+  endpoint: string,
+  headers: Record<string, string>,
+  onMessage: (data: string) => void = () => ({}),
+  timeFunction = (i: number) =>
     Math.min(64 * Math.pow(i, 2), MAX_DELAY) * (0.9 + 0.2 * Math.random()),
 ) {
-  let stopped;
-  let ws;
+  let stopped: boolean;
+  let ws: WebSocket.Client | null = null;
 
   async function connect() {
     stopped = false;

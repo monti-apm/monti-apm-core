@@ -1,4 +1,4 @@
-import Clock from './clock.js';
+import Clock from './clock';
 import debug from 'debug';
 // eslint-disable-next-line max-len
 import {
@@ -232,7 +232,6 @@ export class Kadira extends EventEmitter2 {
     }
 
     const { disconnect } = persistentConnectWebSocket(
-      this,
       this._options.endpoint,
       this._websocketHeaders,
       this._handleMessage.bind(this),
