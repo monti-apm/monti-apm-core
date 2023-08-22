@@ -2,29 +2,19 @@ export const CoreEvent = {
   JOB_ADDED: 'job:added',
 
   DISCONNECT: 'disconnect',
+};
+
+export const WebSocketEvent = {
+  OPEN: 'open',
+  CLOSE: 'close',
+  MESSAGE: 'message',
+  ERROR: 'error',
+  PING: 'ping',
 
   WEBSOCKET_CONNECTED: 'websocket:connected',
   WEBSOCKET_ATTEMPT: 'websocket:attempt',
   WEBSOCKET_CLOSED: 'websocket:closed',
-  WEBSOCKET_BACKOFF: 'websocket:backoff',
-  WEBSOCKET_BACKOFF_READY: 'websocket:backoff:ready',
-  WEBSOCKET_BACKOFF_FAIL: 'websocket:backoff:fail',
-  WEBSOCKET_BACKOFF_RESET: 'websocket:backoff:reset',
 };
-
-export enum WebSocketEvent {
-  OPEN = 'open',
-  CLOSE = 'close',
-  MESSAGE = 'message',
-  ERROR = 'error',
-  PING = 'ping',
-}
-
-export enum BackoffEvent {
-  READY = 'ready',
-  BACKOFF = 'backoff',
-  FAIL = 'fail',
-}
 
 export enum ContentType {
   JSON = 'application/json',

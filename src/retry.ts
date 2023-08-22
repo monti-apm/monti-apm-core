@@ -41,7 +41,7 @@ export default function retry<T = any>(
   const options = merge(
     {
       maxRetries: 3,
-      timeFunction: (i: number) => 100 * Math.pow(i, 2),
+      timeFunction: (i: number) => retry._initialDelay * Math.pow(i, 2),
     },
     _options,
   );
@@ -52,7 +52,7 @@ export default function retry<T = any>(
   return new Promise(function (resolve, reject) {
     let count = 0;
 
-    const onError = function (err) {
+    const onError = function (err: any) {
       if (err instanceof ByPassRetryError) {
         reject(err);
       } else {
@@ -84,3 +84,5 @@ export default function retry<T = any>(
     attempt();
   });
 }
+
+retry._initialDelay = 5000;

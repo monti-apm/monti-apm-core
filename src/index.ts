@@ -1,5 +1,6 @@
-import Clock from './clock';
+import Clock from './clock.js';
 import debug from 'debug';
+// eslint-disable-next-line max-len
 import {
   ContentType,
   CoreEvent,
@@ -8,24 +9,35 @@ import {
   HttpHeader,
   SupportedFeatures,
 } from './constants';
+// eslint-disable-next-line max-len
 import {
   axiosRetry,
   parseAllowedFeaturesHeader,
   stringifySupportedFeatures,
 } from './utils';
 import { hostname } from 'os';
-import { v4 as uuid } from 'uuid';
 import EventEmitter2 from 'eventemitter2';
-import { connectWithBackoff } from './utils/websocket-utils';
-import WebSocket from 'faye-websocket';
-import { merge } from 'remeda';
-import { RetryOptions } from '@/retry';
+import { persistentConnectWebSocket } from './utils/websocket-utils';
 
 const logger = debug('kadira-core:transport');
+const jobLogger = debug('kadira-core:jobs');
 
 export type Job = {
   id: string;
   [key: string]: any;
+};
+
+export type KadiraOptions = {
+  appId: string;
+  appSecret: string;
+  agentVersion: string;
+  endpoint: string;
+  hostname: string;
+  clockSyncInterval: number;
+  dataFlushInterval: number;
+  retryOptions: {
+    maxRetries: number;
+  };
 };
 
 const defaultOptions = {
@@ -41,38 +53,20 @@ const defaultOptions = {
   },
 };
 
-export type Options = {
-  appId: string;
-  appSecret: string;
-  agentVersion: string;
-  endpoint: string;
-  hostname: string;
-  clockSyncInterval: number;
-  dataFlushInterval: number;
-  retryOptions: RetryOptions;
-};
-
 // exporting this for if we need to get this as a NPM module.
 export class Kadira extends EventEmitter2 {
-  _id = uuid();
   _supportedFeatures = SupportedFeatures;
   _allowedFeatures = {};
-  _jobQueue: Job[] = [];
-  _instancedAt = Date.now();
-
-  _ws: WebSocket.Client | null = null;
-
-  _options: Options = defaultOptions;
-  _headers: Record<string, string | undefined> = {};
-
+  _options: KadiraOptions;
+  _headers: Record<string, string> = {};
   _clock: Clock;
-  _clockSyncInterval: NodeJS.Timeout | undefined;
+  _clockSyncInterval: NodeJS.Timeout | null;
+  _disconnectWebSocket: (() => void) | null = null;
 
-  constructor(options: Options) {
+  constructor(_options?: Partial<KadiraOptions>) {
     super();
 
-    this._options = merge(this._options, options);
-
+    this._options = Object.assign({}, defaultOptions, _options);
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
@@ -80,28 +74,34 @@ export class Kadira extends EventEmitter2 {
       'kadira-app-secret': this._options.appSecret,
       'monti-agent-version': this._options.agentVersion,
       'monti-agent-hostname': this._options.hostname,
-      'monti-connection-uuid': this._id,
     };
 
     this._clock = new Clock({
       endpoint: this._options.endpoint + '/simplentp/sync',
     });
+
+    this._clockSyncInterval = null;
   }
 
   get _websocketHeaders() {
     return {
       ...this._headers,
-      'monti-uptime': Date.now() - this._instancedAt,
       'monti-supported-features': stringifySupportedFeatures(
         this._supportedFeatures,
       ),
     };
   }
 
+  featureSupported(feature: string) {
+    return Boolean(this._allowedFeatures[feature]);
+  }
+
   async connect() {
     logger('connecting with', this._options);
 
     await this._checkAuth();
+
+    this._initWebSocket();
 
     await this._clock.sync();
 
@@ -113,12 +113,15 @@ export class Kadira extends EventEmitter2 {
 
   disconnect() {
     logger('disconnect');
-    clearInterval(this._clockSyncInterval);
 
-    this.emit(CoreEvent.DISCONNECT);
+    if (this._clockSyncInterval) {
+      clearInterval(this._clockSyncInterval);
+    }
+
+    this._disconnectWebSocket?.();
   }
 
-  getJob(id: string) {
+  getJob(id) {
     const data = { action: 'get', params: {} };
     Object.assign(data.params, { id });
 
@@ -155,12 +158,14 @@ export class Kadira extends EventEmitter2 {
         host: this._options.hostname,
       };
 
+      const json = JSON.stringify(payload);
+
       const url = this._options.endpoint;
 
-      logger('send data...');
+      logger('sending data', json.slice(0, 100));
 
       const params = {
-        data: Buffer.from(JSON.stringify(payload)),
+        data: Buffer.from(json),
         headers: {
           'content-type': ContentType.JSON,
         },
@@ -201,52 +206,39 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  _handleJobEvent(job) {
-    if (this._jobQueue.find((j) => j._id === job._id)) {
-      return;
-    }
-
-    this._jobQueue.push(job);
-
+  _handleJobEvent(job: Job) {
     this.emit(CoreEvent.JOB_ADDED, job);
   }
 
-  _handleMessage(message) {
+  _handleMessage(message: string) {
     try {
-      if (!message.data) {
-        return;
-      }
-
-      if (['ping', 'pong'].includes(message.data.toString())) {
-        return;
-      }
-
-      const { event, data } = JSON.parse(message.data);
+      const { event, data } = JSON.parse(message);
 
       switch (event) {
         case EngineEvent.JOB_CREATED:
-          this._handleJobEvent(data);
+          return this._handleJobEvent(data);
+        default:
+          jobLogger(`unknown event ${event}`);
       }
     } catch (error: any) {
-      console.error(
-        'Monti APM: Failed to parse message',
-        JSON.stringify(message.data),
-      );
+      console.error('Monti APM: Failed to parse message', message);
       console.error(error.stack);
     }
   }
 
-  async _initWebSocket() {
-    if (this._ws) {
+  _initWebSocket() {
+    if (!this.featureSupported(Feature.WEBSOCKETS)) {
       return;
     }
 
-    try {
-      await connectWithBackoff(this);
-    } catch (e) {
-      console.error('Monti APM WebSocket: Failed to connect');
-      this._ws = null;
-    }
+    const { disconnect } = persistentConnectWebSocket(
+      this,
+      this._options.endpoint,
+      this._websocketHeaders,
+      this._handleMessage.bind(this),
+    );
+
+    this._disconnectWebSocket = disconnect;
   }
 
   // ping the server to check whether appId and appSecret
@@ -262,21 +254,12 @@ export class Kadira extends EventEmitter2 {
       res.headers[HttpHeader.ACCEPT_FEATURES],
     );
 
-    if (!this._allowedFeatures[Feature.WEBSOCKETS]) {
-      return res.data;
-    }
-
-    // It should wait for websocket connection to be established.
-    // Explicit is better than implicit.
-    await this._initWebSocket();
-
     return res.data;
   }
 
-  async _send(
-    url: string,
-    params: { data?: any; headers: any; noRetry?: boolean | undefined },
-  ) {
+  // communicates with the server with http
+  // Also handles response http status codes and retries
+  async _send(url: string, params: Record<string, any>) {
     const res = await axiosRetry(
       url,
       {

@@ -1,24 +1,25 @@
 import WebSocket from 'faye-websocket';
-import { BackoffEvent, CoreEvent, WebSocketEvent } from '@/constants';
-import * as backoff from 'backoff';
-import { sleep } from '@/utils';
-import Kadira from '@/index';
+import { WebSocketEvent } from '@/constants';
+import { sleep } from '../utils';
+import EventEmitter2 from 'eventemitter2';
 
-const maxAttempts = 4;
+export const WebSocketEvents = new EventEmitter2();
 
-export function getWsUrl(url: string) {
+export function getWsUrl(url) {
   return url.replace('https://', 'wss://').replace('http://', 'ws://');
 }
 
-export function connectWebSocket(
-  url: string,
-  headers: Record<string, string | number>,
-): Promise<WebSocket.Client> {
+export function connectWebSocket(url, headers, onMessage) {
   return new Promise((resolve, reject) => {
-    const errorHandler = (event: any) => {
+    const errorHandler = (event) => {
       reject(event);
     };
 
+    WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_ATTEMPT);
+
+    /**
+     * @type {WebSocket} Not the same but the signature is similar to this type.
+     */
     const ws = new WebSocket.Client(getWsUrl(url).concat('/websocket'), null, {
       headers,
     });
@@ -27,146 +28,105 @@ export function connectWebSocket(
       ws.send('pong');
     };
 
-    ws.addEventListener(WebSocketEvent.MESSAGE, (event) => {
-      if (event.data.toString() === 'ping') {
-        ws.emit(WebSocketEvent.PING);
-        ws.pong();
-      }
-    });
+    ws.on(WebSocketEvent.CLOSE, errorHandler);
+    ws.on(WebSocketEvent.ERROR, errorHandler);
 
-    ws.addEventListener(WebSocketEvent.CLOSE, errorHandler);
-    ws.addEventListener(WebSocketEvent.ERROR, errorHandler);
-
-    ws.addEventListener(WebSocketEvent.OPEN, () => {
+    ws.on(WebSocketEvent.OPEN, () => {
       // Need to remove the handlers, otherwise they will
       // be called again in normal operation
-      ws.removeEventListener(WebSocketEvent.CLOSE, errorHandler);
-      ws.removeEventListener(WebSocketEvent.ERROR, errorHandler);
+      ws.off(WebSocketEvent.CLOSE, errorHandler);
+      ws.off(WebSocketEvent.ERROR, errorHandler);
+
+      WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
+
+      ws.on(WebSocketEvent.MESSAGE, (event) => {
+        const data = event.data.toString();
+
+        if (!data) {
+          return;
+        }
+
+        if (data === 'ping') {
+          ws.emit(WebSocketEvent.PING);
+          ws.pong();
+          return;
+        }
+
+        onMessage(data);
+      });
+
+      ws.on(WebSocketEvent.CLOSE, () =>
+        WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CLOSED),
+      );
 
       resolve(ws);
     });
   });
 }
 
-export async function connectWithRetry(core: Kadira, attempts = maxAttempts) {
-  for (let i = 0; i < attempts; i++) {
-    try {
-      if (core) {
-        core.emit(CoreEvent.WEBSOCKET_ATTEMPT);
+export const once = async (ws, event) =>
+  new Promise((resolve) => {
+    ws.once(event, resolve);
+  });
+
+export const MAX_DELAY = 60000;
+
+export function persistentConnectWebSocket(
+  core,
+  endpoint,
+  headers,
+  onMessage,
+  timeFunction = (i) =>
+    Math.min(64 * Math.pow(i, 2), MAX_DELAY) * (0.9 + 0.2 * Math.random()),
+) {
+  let stopped;
+  let ws;
+
+  async function connect() {
+    stopped = false;
+
+    let attempts = 0;
+
+    while (!stopped) {
+      try {
+        ws = await connectWebSocket(endpoint, headers, onMessage);
+
+        attempts = 0;
+
+        if (stopped) {
+          ws.close();
+          break;
+        }
+
+        await once(ws, 'close');
+
+        ws = null;
+      } catch (error: any) {
+        if (attempts > 10) {
+          console.error(`Monti APM WebSocket: Attempt ${attempts + 1} failed`);
+        }
+
+        // If not closed locally by the client, we log the error
+        if (error.code !== 1006) {
+          console.error(error);
+        }
+
+        attempts++;
       }
 
-      // Connection successful; exit the loop and return the WebSocket instance
-      const ws = await connectWebSocket(
-        core._options.endpoint,
-        core._websocketHeaders,
-      );
-
-      core._ws = ws;
-
-      ws.on(WebSocketEvent.MESSAGE, (message) => core._handleMessage(message));
-
-      // Emit an event, so we can handle reconnection elsewhere
-      ws.on(WebSocketEvent.CLOSE, () => core.emit(CoreEvent.WEBSOCKET_CLOSED));
-
-      setTimeout(() => {
-        core.emit(CoreEvent.WEBSOCKET_CONNECTED);
-      }, 0);
-
-      return ws;
-    } catch (error: any) {
-      if (error.code !== 1006) {
-        console.error(error);
-      }
-      // eslint-disable-next-line no-console,max-len
-      console.error(
-        `Monti APM WebSocket: Attempt ${i + 1} of ${attempts} failed`,
-      );
-      if (i + 1 === attempts) {
-        throw error;
-      }
+      await sleep(timeFunction(attempts));
     }
-    // Wait for a while before retrying (e.g., 1000ms)
-    await new Promise((resolve) =>
-      setTimeout(resolve, connectWithRetry._timeout),
-    );
   }
 
-  return null;
-}
+  connect();
 
-connectWithRetry._timeout = 5000;
+  return {
+    disconnect() {
+      stopped = true;
 
-export async function connectWithBackoff(core) {
-  let ws: WebSocket.Client | null = null;
-
-  const _backoff = backoff.exponential({
-    randomisationFactor: 1,
-    initialDelay: 64,
-    maxDelay: connectWithBackoff._maxDelay,
-  });
-
-  const onDisconnect = () => {
-    if (ws) {
-      ws.removeAllListeners();
-      ws.close();
-      ws = null;
-    }
-
-    _backoff.reset();
-
-    core.off(CoreEvent.DISCONNECT, onDisconnect);
+      if (ws) {
+        ws.close();
+      }
+    },
   };
-
-  core.on(CoreEvent.DISCONNECT, onDisconnect);
-
-  const connect = async () => {
-    try {
-      ws = await connectWithRetry(core);
-
-      await core.waitFor(CoreEvent.WEBSOCKET_CONNECTED);
-
-      _backoff.reset();
-
-      ws?.on(WebSocketEvent.CLOSE, (event) => {
-        _backoff.backoff(event);
-      });
-    } catch (error) {
-      _backoff.backoff(error);
-    }
-  };
-
-  _backoff.failAfter(connectWithBackoff._failAfter);
-
-  _backoff.on(BackoffEvent.READY, (number, delay) => {
-    core.emit(CoreEvent.WEBSOCKET_BACKOFF_READY, number, delay);
-  });
-
-  _backoff.on(BackoffEvent.BACKOFF, async (number, delay, error) => {
-    if (connectWithBackoff._disableBackoff) {
-      return;
-    }
-    // eslint-disable-next-line no-console,max-len
-    console.log(
-      `Monti APM WebSocket: Reconnection attempt #${
-        number + 1
-      } with a delay of ${delay}ms`,
-    );
-    core.emit(CoreEvent.WEBSOCKET_BACKOFF, number, delay, error);
-    await sleep(delay);
-    await connect();
-  });
-
-  _backoff.on(BackoffEvent.FAIL, () => {
-    // eslint-disable-next-line no-console,max-len
-    console.error(
-      'Monti APM WebSocket: Reconnection Failed (Exhausted Backoff)',
-    );
-    core.emit(CoreEvent.WEBSOCKET_BACKOFF_FAIL);
-  });
-
-  await connect();
 }
-
-connectWithBackoff._failAfter = 10;
-connectWithBackoff._maxDelay = 60000;
-connectWithBackoff._disableBackoff = false;
