@@ -4,6 +4,8 @@
   "description": "Monti APM Core API",
   "main": "./dist/",
   "scripts": {
+    "prepublishOnly": "npm run clean && npm run build && npm run types",
+    "test:debug": "DEBUG=kadira-core:* npm run test:watch"
     "clean": "rimraf dist",
     "build": "swc src --out-dir=dist",
     "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
