@@ -11,7 +11,6 @@ export function getAxiosConfig(params: AxiosRequestConfig): AxiosRequestConfig {
     // Axios defaults to 10mb. Increases limit to 100mb.
     maxBodyLength: 100 * 1024 * 1024,
     method: params.method || HttpMethod.POST,
-    maxRedirects: 0,
   };
 }
 
