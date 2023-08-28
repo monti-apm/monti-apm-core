@@ -54,7 +54,7 @@ const defaultOptions = {
 };
 
 // exporting this for if we need to get this as a NPM module.
-export class Kadira extends EventEmitter2 {
+export class Monti extends EventEmitter2 {
   _supportedFeatures = SupportedFeatures;
   _allowedFeatures = {};
   _options: KadiraOptions;
@@ -274,6 +274,8 @@ export class Kadira extends EventEmitter2 {
   }
 }
 
-export default Kadira;
+export const Kadira = Monti;
+
+export default Monti;
 
 export * from './constants';
