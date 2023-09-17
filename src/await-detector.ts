@@ -1,11 +1,11 @@
-import { writeSync } from 'node:fs';
-import { stdout } from 'node:process';
+import { writeSync } from 'fs';
+import { stdout } from 'process';
 import {
   AsyncHook,
   AsyncLocalStorage,
   createHook,
   executionAsyncId,
-} from 'node:async_hooks';
+} from 'async_hooks';
 import EventEmitter2 from 'eventemitter2';
 
 type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
