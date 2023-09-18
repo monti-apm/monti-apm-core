@@ -6,14 +6,13 @@ import {
   createHook,
   executionAsyncId,
 } from 'async_hooks';
-import EventEmitter2 from 'eventemitter2';
 
 type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
 
 export const AwaitDetectorStorage = new AsyncLocalStorage();
 export const AwaitDetectorSymbol = Symbol('AsyncDetector');
 
-export class AwaitDetector extends EventEmitter2 {
+export class AwaitDetector {
   static OLD_PROMISE_CONSTRUCTOR = global.Promise;
 
   start = Date.now();
@@ -38,8 +37,6 @@ export class AwaitDetector extends EventEmitter2 {
     onAwaitStart?: AsyncCallback;
     onAwaitEnd?: AsyncCallback;
   } = {}) {
-    super();
-
     this.logging = logging;
     this.onAwaitStart = onAwaitStart;
     this.onAwaitEnd = onAwaitEnd;
