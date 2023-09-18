@@ -99,11 +99,11 @@ export class AwaitDetector {
     global.Promise[AwaitDetectorSymbol] = true;
   }
 
-  get isWithinContext() {
-    if (AwaitDetectorStorage.getStore()?.[AwaitDetectorSymbol] === this)
-      return true;
-    if (AwaitDetectorStorage.getStore()?.[AwaitDetectorSymbol] === undefined)
-      return false;
+  isWithinContext() {
+    const store = AwaitDetectorStorage.getStore();
+
+    if (store?.[AwaitDetectorSymbol] === this) return true;
+    if (store?.[AwaitDetectorSymbol] === undefined) return false;
 
     throw new Error(
       'AwaitDetectorStorage is being used by another AwaitDetector instance',
@@ -115,7 +115,7 @@ export class AwaitDetector {
       return;
     }
 
-    if (!this.isWithinContext) {
+    if (!this.isWithinContext()) {
       return;
     }
 
@@ -144,7 +144,7 @@ export class AwaitDetector {
   }
 
   before(asyncId: number) {
-    if (!this.isWithinContext) {
+    if (!this.isWithinContext()) {
       return;
     }
 
@@ -159,7 +159,7 @@ export class AwaitDetector {
   }
 
   destroy(asyncId: number) {
-    if (!this.isWithinContext) {
+    if (!this.isWithinContext()) {
       return;
     }
 
@@ -174,7 +174,7 @@ export class AwaitDetector {
   }
 
   promiseResolve(asyncId: number) {
-    if (!this.isWithinContext) {
+    if (!this.isWithinContext()) {
       return;
     }
 
