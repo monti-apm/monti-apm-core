@@ -22,6 +22,8 @@ export class AwaitDetector {
   afterAwaits = new Map();
   ignoreNextPromise = 0;
 
+  awaitData = new Map<number, [number]>();
+
   hook: AsyncHook;
 
   logging: boolean;
@@ -135,6 +137,7 @@ export class AwaitDetector {
     if (this.asyncFunctions.has(triggerAsyncId)) {
       this.onAwaitStart(asyncId, triggerAsyncId);
       this.awaits.add(asyncId);
+      this.awaitData.set(asyncId, [triggerAsyncId]);
       this.log(
         `${type}(${asyncId}): await start - async function: ${triggerAsyncId}`,
       );
@@ -149,7 +152,12 @@ export class AwaitDetector {
     }
 
     if (this.afterAwaits.has(asyncId)) {
-      this.onAwaitEnd(asyncId, this.afterAwaits.get(asyncId));
+      const awaitAsyncId = this.afterAwaits.get(asyncId);
+
+      if (!this.awaitData.has(awaitAsyncId)) return;
+      const [triggerAsyncId] = this.awaitData.get(awaitAsyncId) as [number];
+      this.onAwaitEnd(awaitAsyncId, triggerAsyncId);
+      this.awaitData.delete(awaitAsyncId);
       // Awaited a thenable or non-promise value
       this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
     } else if (this.awaits.has(asyncId)) {

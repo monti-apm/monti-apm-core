@@ -73,5 +73,29 @@ describe('AwaitDetector', () => {
       onAwaitStartSpy.restore();
       onAwaitEndSpy.restore();
     });
+
+    it('should resolve awaits in the correct order', async () => {
+      const onAwaitStartSpy = spy(detector, 'onAwaitStart');
+      const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+      const result = await detector.detect(async () => {
+        await sleep(10);
+        await sleep(20);
+        await sleep(30);
+        return true;
+      });
+
+      expect(result).to.be.true;
+
+      expect(onAwaitStartSpy.callCount).to.be.equal(3);
+      expect(onAwaitEndSpy.callCount).to.be.equal(3);
+
+      const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
+      const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+
+      expect(starts).to.be.deep.equal(ends);
+
+      onAwaitStartSpy.restore();
+      onAwaitEndSpy.restore();
+    });
   });
 });
