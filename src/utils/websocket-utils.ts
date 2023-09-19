@@ -1,6 +1,6 @@
 import WebSocket from 'faye-websocket';
-import { WebSocketEvent } from '@/constants';
-import { sleep } from '../utils';
+import { WebSocketEvent } from '../constants';
+import { sleep } from './index';
 import EventEmitter2 from 'eventemitter2';
 
 export const WebSocketEvents = new EventEmitter2();

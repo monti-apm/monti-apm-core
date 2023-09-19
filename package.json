@@ -5,15 +5,14 @@
   "main": "dist/index.js",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "swc src --out-dir=dist",
-    "types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "build": "npm run clean && tsc",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
     "test:dist": "mocha 'dist/**/*.test.js' --exit --watch=false",
     "test": "mocha src/**/*.test.js --require=@swc/register --exit --watch=false",
     "test:watch": "nodemon --exec 'npm run test' -e js,ts --watch src",
     "test:debug": "DEBUG=kadira-core:* npm run test:watch",
-    "prepublishOnly": "npm run clean && npm run build && npm run types"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",

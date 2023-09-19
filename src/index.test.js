@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import server from './tests/server.js';
-import Kadira from './index.ts';
-import { ByPassRetryError } from '@/retry';
+import server from './tests/server';
+import Kadira from './index';
+import { ByPassRetryError } from './retry';
 import { Readable } from 'stream';
 import { expect } from 'chai';
 import { hostname } from 'os';

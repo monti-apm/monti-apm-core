@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import server from './tests/server.js';
-import Clock from './clock.ts';
+import server from './tests/server';
+import Clock from './clock';
 
 describe('clock', function () {
   const endpoint = 'http://localhost:8000/simplentp/sync';

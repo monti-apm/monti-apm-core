@@ -6,17 +6,8 @@
       "decorators": true,
       "dynamicImport": true
     },
+    "target": "es2017",
     "baseUrl": "./",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
-  },
-  "env": {
-    "targets": {
-      "node": "4"
-    },
   },
   "module": {
     "type": "commonjs"

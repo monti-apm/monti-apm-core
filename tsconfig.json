@@ -15,13 +15,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "target": "ES5",
+    "target": "es2017",
     "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
     "typeRoots": [
       "./node_modules/@types",
       "./src/@types"
@@ -29,10 +24,5 @@
   },
   "include": [
     "src"
-  ],
-  "exclude": [
-    "src/tests",
-    "**/*.test.js",
-    "**/*.test.ts"
   ]
 }

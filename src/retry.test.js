@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import retry, { ByPassRetryError, MaxRetryError } from './retry.ts';
+import retry, { ByPassRetryError, MaxRetryError } from './retry';
 
 describe('retry', function () {
   it('should retry N times', async function () {

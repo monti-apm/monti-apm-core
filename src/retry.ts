@@ -1,4 +1,4 @@
-import { sleep } from '@/utils';
+import { sleep } from './utils';
 import { merge } from 'remeda';
 
 export class MaxRetryError extends Error {
