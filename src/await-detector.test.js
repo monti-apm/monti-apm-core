@@ -4,7 +4,7 @@ import { spy } from 'sinon';
 import { AwaitDetector, AwaitDetectorSymbol } from './await-detector';
 import { sleep } from './utils';
 
-(process.version.match(/v4/) ? describe.skip : describe.only)(
+(process.version.match(/v4/) ? describe.skip : describe)(
   'AwaitDetector',
   () => {
     let detector;
