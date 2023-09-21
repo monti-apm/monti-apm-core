@@ -9,11 +9,10 @@ import {
 
 type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
 
-export const AwaitDetectorStorage = new AsyncLocalStorage();
-export const AwaitDetectorSymbol = Symbol('AsyncDetector');
-
 export class AwaitDetector {
-  static OLD_PROMISE_CONSTRUCTOR = global.Promise;
+  static OldPromiseCtor = global.Promise;
+  static Storage = new AsyncLocalStorage();
+  static Symbol = Symbol('AsyncDetector');
 
   start = Date.now();
 
@@ -65,7 +64,7 @@ export class AwaitDetector {
 
   unregister() {
     this.disable();
-    global.Promise = AwaitDetector.OLD_PROMISE_CONSTRUCTOR;
+    global.Promise = AwaitDetector.OldPromiseCtor;
   }
 
   log(...args: any[]) {
@@ -80,7 +79,7 @@ export class AwaitDetector {
   }
 
   registerPromiseConstructor() {
-    if (global.Promise[AwaitDetectorSymbol]) {
+    if (global.Promise[AwaitDetector.Symbol]) {
       return;
     }
 
@@ -98,14 +97,14 @@ export class AwaitDetector {
       }
     };
 
-    global.Promise[AwaitDetectorSymbol] = true;
+    global.Promise[AwaitDetector.Symbol] = true;
   }
 
   isWithinContext() {
-    const store = AwaitDetectorStorage.getStore();
+    const store = AwaitDetector.Storage.getStore();
 
-    if (store?.[AwaitDetectorSymbol] === this) return true;
-    if (store?.[AwaitDetectorSymbol] === undefined) return false;
+    if (store?.[AwaitDetector.Symbol] === this) return true;
+    if (store?.[AwaitDetector.Symbol] === undefined) return false;
 
     throw new Error(
       'AwaitDetectorStorage is being used by another AwaitDetector instance',
@@ -197,9 +196,9 @@ export class AwaitDetector {
   }
 
   detect(callback: (...args: any[]) => any) {
-    return AwaitDetectorStorage.run(
+    return AwaitDetector.Storage.run(
       {
-        [AwaitDetectorSymbol]: this,
+        [AwaitDetector.Symbol]: this,
       },
       callback,
     );

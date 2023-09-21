@@ -2,13 +2,12 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { spy } from 'sinon';
 import { sleep } from './utils';
+import { SupportsAsyncHooks } from './utils/platform';
 
-const major = parseInt(process.version.match(/v(\d+)/)[1], 10);
-
-(major < 12 ? describe.skip : describe)('AwaitDetector', async () => {
-  const { AwaitDetector, AwaitDetectorSymbol } = await import(
-    './await-detector'
-  );
+(SupportsAsyncHooks ? describe : describe.skip)('AwaitDetector', async () => {
+  const { AwaitDetector, AwaitDetectorSymbol } = SupportsAsyncHooks
+    ? await import('./await-detector')
+    : {};
 
   let detector;
 
@@ -40,14 +39,14 @@ const major = parseInt(process.version.match(/v(\d+)/)[1], 10);
 
   describe('promise constructor', () => {
     it('should replace the global promise constructor', () => {
-      const originalPromise = AwaitDetector.OLD_PROMISE_CONSTRUCTOR;
+      const originalPromise = AwaitDetector.OldPromiseCtor;
 
       expect(global.Promise).to.not.equal(originalPromise);
       expect(global.Promise[AwaitDetectorSymbol]).to.be.true;
     });
 
     it('should unwrap the promise constructor', () => {
-      const originalPromise = AwaitDetector.OLD_PROMISE_CONSTRUCTOR;
+      const originalPromise = AwaitDetector.OldPromiseCtor;
 
       detector.unregister();
 

@@ -35,8 +35,10 @@ export function connectWebSocket(
     ws.on(WebSocketEvent.OPEN, () => {
       // Need to remove the handlers, otherwise they will
       // be called again in normal operation
-      ws.off(WebSocketEvent.CLOSE, errorHandler);
-      ws.off(WebSocketEvent.ERROR, errorHandler);
+      ws.off?.(WebSocketEvent.CLOSE, errorHandler);
+      ws.off?.(WebSocketEvent.ERROR, errorHandler);
+      ws.removeEventListener?.(WebSocketEvent.CLOSE, errorHandler);
+      ws.removeEventListener?.(WebSocketEvent.ERROR, errorHandler);
 
       WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
 
