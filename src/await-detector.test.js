@@ -5,7 +5,7 @@ import { sleep } from './utils';
 import { SupportsAsyncHooks } from './utils/platform';
 
 (SupportsAsyncHooks ? describe : describe.skip)('AwaitDetector', async () => {
-  const { AwaitDetector, AwaitDetectorSymbol } = SupportsAsyncHooks
+  const { AwaitDetector } = SupportsAsyncHooks
     ? await import('./await-detector')
     : {};
 
@@ -42,7 +42,7 @@ import { SupportsAsyncHooks } from './utils/platform';
       const originalPromise = AwaitDetector.OldPromiseCtor;
 
       expect(global.Promise).to.not.equal(originalPromise);
-      expect(global.Promise[AwaitDetectorSymbol]).to.be.true;
+      expect(global.Promise[AwaitDetector.Symbol]).to.be.true;
     });
 
     it('should unwrap the promise constructor', () => {
@@ -51,7 +51,7 @@ import { SupportsAsyncHooks } from './utils/platform';
       detector.unregister();
 
       expect(global.Promise).to.equal(originalPromise);
-      expect(global.Promise[AwaitDetectorSymbol]).to.be.undefined;
+      expect(global.Promise[AwaitDetector.Symbol]).to.be.undefined;
     });
   });
 
