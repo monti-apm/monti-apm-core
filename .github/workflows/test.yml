@@ -49,7 +49,7 @@ jobs:
           name: dist
           path: dist
       - run: |
-          if [[ "${{ matrix.node }}" == 4 ]]; then
+          if [[ "${{ matrix.node-version }}" == 4 ]]; then
             npm install -g npm@4
           fi
       - run: npm install
