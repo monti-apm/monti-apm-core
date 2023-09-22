@@ -51,7 +51,7 @@ jobs:
       - run: |
           if [[ "${{ matrix.node-version }}" == 4 ]]; then
             npm install -g npm@4
-            node ./scripts/exclude-packages.js @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-prettier prettier
+            node ./scripts/exclude-packages.js @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-prettier prettier @types/node
           else
             npm install
           fi
