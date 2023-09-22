@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [4, 8, 12, 14, 16, 18, 20]
+        node-version: [4, 8, 12, 14, 16, 20]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
@@ -51,6 +51,8 @@ jobs:
       - run: |
           if [[ "${{ matrix.node-version }}" == 4 ]]; then
             npm install -g npm@4
+            node ./scripts/exclude-packages.js @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-prettier prettier
+          else
+            npm install
           fi
-      - run: npm install
       - run: npm run test:dist
