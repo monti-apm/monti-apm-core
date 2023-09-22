@@ -8,8 +8,8 @@
     "build": "npm run clean && tsc",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
-    "test:dist": "mocha 'dist/**/*.test.js' --exit --watch=false",
-    "test": "mocha src/**/*.test.js --require=ts-node/register/transpile-only --exit --watch=false",
+    "test:dist": "mocha 'dist/**/*.test.js' --exit",
+    "test": "mocha src/**/*.test.js --require=ts-node/register/transpile-only --exit",
     "test:watch": "nodemon --exec 'npm run test' -e js,ts --watch src",
     "test:debug": "DEBUG=kadira-core:* npm run test:watch",
     "prepublishOnly": "npm run build"
