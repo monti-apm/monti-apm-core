@@ -52,7 +52,7 @@ jobs:
           if [[ "${{ matrix.node-version }}" == 4 ]]; then
             npm install -g npm@4
             node ./scripts/exclude-packages.js @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-prettier prettier @types/node mocha
-            npm install --save-dev mocha@3.5.3
+            npm install --save-dev mocha@2.5.3
           else
             npm install
           fi
