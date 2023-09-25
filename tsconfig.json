@@ -15,7 +15,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "target": "es2017",
+    "target": "es2015",
     "baseUrl": ".",
     "typeRoots": [
       "./node_modules/@types",
