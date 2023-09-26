@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [4, 6, 8, 12, 14, 16, 20]
+        node-version: [8, 12, 14, 16, 18, 20]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
@@ -48,12 +48,5 @@ jobs:
         with:
           name: dist
           path: dist
-      - run: |
-          if [[ "${{ matrix.node-version }}" == 4 ]]; then
-            npm install -g npm@4
-            node ./scripts/exclude-packages.js @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-prettier prettier @types/node mocha
-            npm install --save-dev mocha@2.5.3
-          else
-            npm install
-          fi
+      - run: npm install
       - run: npm run test:dist
