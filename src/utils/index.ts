@@ -71,7 +71,7 @@ export function parseAllowedFeaturesHeader(header: string) {
   const result = {};
 
   if (header) {
-    header.split(',').map((feature: string | number) => {
+    header.split(',').map((feature: string) => {
       if (SupportedFeatures[feature]) {
         result[feature] = true;
       }
