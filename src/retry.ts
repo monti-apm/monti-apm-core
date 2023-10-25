@@ -1,5 +1,4 @@
 import { sleep } from './utils';
-import { merge } from 'remeda';
 
 export class MaxRetryError extends Error {
   /**
@@ -38,7 +37,7 @@ export default function retry<T = any>(
   getPromise: () => Promise<T>,
   _options?: Partial<RetryOptions>,
 ): Promise<T> {
-  const options = merge(
+  const options = Object.assign(
     {
       maxRetries: 3,
       timeFunction: (i: number) => retry._initialDelay * Math.pow(i, 2),
