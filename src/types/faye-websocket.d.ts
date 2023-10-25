@@ -33,7 +33,7 @@ declare module 'faye-websocket' {
 
     removeEventListener(
       type: string,
-      listener: (event: MessageEvent) => voi,
+      listener: (event: MessageEvent) => void,
     ): void;
 
     emit(type: string): void;
