@@ -1,9 +1,4 @@
-export const NodeMajorVersion = parseInt(
-  process.version.match(/v(\d+)/)?.[1] as string,
-  10,
-);
+import { AsyncLocalStorage } from 'async_hooks';
 
-/**
- * We get "AsyncLocalStorage is not a constructor" before Node 12.
- */
-export const SupportsAsyncHooks = NodeMajorVersion >= 12;
+export const SupportsAsyncLocalStorage =
+  typeof AsyncLocalStorage !== 'undefined';
