@@ -56,7 +56,7 @@ const defaultOptions = {
 // exporting this for if we need to get this as a NPM module.
 export class Monti extends EventEmitter2 {
   _supportedFeatures = SupportedFeatures;
-  _allowedFeatures = {};
+  _allowedFeatures: Record<string, boolean> = {};
   _options: KadiraOptions;
   _headers: Record<string, string> = {};
   _clock: Clock;
@@ -121,7 +121,7 @@ export class Monti extends EventEmitter2 {
     this._disconnectWebSocket?.();
   }
 
-  getJob(id) {
+  getJob(id: string) {
     const data = { action: 'get', params: {} };
     Object.assign(data.params, { id });
 

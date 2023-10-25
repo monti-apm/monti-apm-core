@@ -79,6 +79,7 @@ export class AwaitDetector {
   }
 
   registerPromiseConstructor() {
+    // @ts-ignore
     if (global.Promise[AwaitDetector.Symbol]) {
       return;
     }
@@ -97,11 +98,12 @@ export class AwaitDetector {
       }
     };
 
+    // @ts-ignore
     global.Promise[AwaitDetector.Symbol] = true;
   }
 
   isWithinContext() {
-    const store = AwaitDetector.Storage.getStore();
+    const store = AwaitDetector.Storage.getStore() as any;
 
     if (store?.[AwaitDetector.Symbol] === this) return true;
     if (store?.[AwaitDetector.Symbol] === undefined) return false;

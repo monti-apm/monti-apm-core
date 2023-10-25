@@ -1,7 +1,7 @@
 import retry, { ByPassRetryError, RetryOptions } from '../retry';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
-import { HttpMethod, SupportedFeatures } from '../constants';
+import { Feature, HttpMethod, SupportedFeatures } from '../constants';
 
 const logger = debug('kadira-core:transport');
 
@@ -68,11 +68,11 @@ export function axiosRetry(
 }
 
 export function parseAllowedFeaturesHeader(header: string) {
-  const result = {};
+  const result: Record<string, boolean> = {};
 
   if (header) {
-    header.split(',').map((feature: string) => {
-      if (SupportedFeatures[feature]) {
+    header.split(',').map((feature) => {
+      if (SupportedFeatures[feature as Feature]) {
         result[feature] = true;
       }
     });

@@ -26,6 +26,8 @@ declare module 'faye-websocket' {
 
     off(event: string, listener: (event: MessageEvent) => void): void;
 
+    once(event: string, listener: (event: MessageEvent) => void): void;
+
     addEventListener(
       type: string,
       listener: (event: MessageEvent) => void,

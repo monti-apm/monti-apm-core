@@ -67,7 +67,7 @@ export function connectWebSocket(
   });
 }
 
-export const once = async (ws, event) =>
+export const once = async (ws: WebSocket.Client, event: string) =>
   new Promise((resolve) => {
     ws.once(event, resolve);
   });

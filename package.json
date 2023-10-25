@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/monti-apm/monti-apm-core#readme",
   "devDependencies": {
+    "@types/debug": "^4.1.10",
     "@types/node": "^20.6.3",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
