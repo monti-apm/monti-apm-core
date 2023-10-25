@@ -3,4 +3,7 @@ export const NodeVersion = parseInt(
   10,
 );
 
-export const SupportsAsyncHooks = NodeVersion >= 8;
+/**
+ * We get "AsyncLocalStorage is not a constructor" before Node 12.
+ */
+export const SupportsAsyncHooks = NodeVersion >= 12;
