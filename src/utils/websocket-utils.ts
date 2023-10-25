@@ -33,12 +33,8 @@ export function connectWebSocket(
     ws.on(WebSocketEvent.ERROR, errorHandler);
 
     ws.on(WebSocketEvent.OPEN, () => {
-      // Need to remove the handlers, otherwise they will
-      // be called again in normal operation
-      ws.off?.(WebSocketEvent.CLOSE, errorHandler);
-      ws.off?.(WebSocketEvent.ERROR, errorHandler);
-      ws.removeEventListener?.(WebSocketEvent.CLOSE, errorHandler);
-      ws.removeEventListener?.(WebSocketEvent.ERROR, errorHandler);
+      ws.off(WebSocketEvent.CLOSE, errorHandler);
+      ws.off(WebSocketEvent.ERROR, errorHandler);
 
       WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
 
@@ -77,7 +73,7 @@ export const MAX_DELAY = 60000;
 export function persistentConnectWebSocket(
   endpoint: string,
   headers: Record<string, string>,
-  onMessage: (data: string) => void = () => ({}),
+  onMessage: (data: string) => void = () => undefined,
   timeFunction = (i: number) =>
     Math.min(64 * Math.pow(i, 2), MAX_DELAY) * (0.9 + 0.2 * Math.random()),
 ) {
