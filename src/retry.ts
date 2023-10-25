@@ -13,7 +13,7 @@ export class MaxRetryError extends Error {
 
 export class ByPassRetryError extends Error {
   /**
-   * reject the promise with this error (in promiser) to stop retrying.
+   * reject the promise with this error (in getPromise) to stop retrying.
    */
   constructor(message: string) {
     super(message);
@@ -27,10 +27,10 @@ export type RetryOptions = {
 };
 
 /**
- * Retry module takes a `promiser` function as the main argument.
- * The `promiser` function should return a promise which will be used
+ * Retry module takes a `getPromise` function as the main argument.
+ * The `getPromise` function should return a promise which will be used
  * to decide whether the task ran successfully. If the task failed,
- * it will retry by running the `promiser` function again. Retry will
+ * it will retry by running the `getPromise` function again. Retry will
  * stop when it has tried `maxRetries` times or if the promise fails
  * with the special error `ERR_ENDRETRY`.
  */
