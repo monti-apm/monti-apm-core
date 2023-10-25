@@ -3,4 +3,4 @@ export const NodeVersion = parseInt(
   10,
 );
 
-export const SupportsAsyncHooks = NodeVersion >= 12;
+export const SupportsAsyncHooks = NodeVersion >= 8;
