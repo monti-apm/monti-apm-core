@@ -1,0 +1,50 @@
+graph TD
+    main["Main Program"] -->|Calls| runAsync;
+
+    runAsync -->|Creates| sleep1[Sleep 100];
+    runAsync -->|Creates| sleep2[Sleep 200];
+    runAsync -->|Creates & Returns| sleep3[Sleep 300];
+
+    runAsync --> initHook[async_hooks.createHook.init]
+    sleep1 --> initHook
+    sleep2 --> initHook
+    sleep3 --> initHook
+
+    initHook -->|Depending on condition| fsWrite1[fs.writeSync: Start]
+    initHook -->|Depending on condition| fsWrite2[fs.writeSync: Await]
+
+    fsWrite1 --> stdout1[stdout]
+    fsWrite2 --> stdout2[stdout]
+
+    initHook -->|Updates| asyncFunctions[asyncFunctions Set]
+    initHook -->|Updates| awaits[Awaits Set]
+    initHook -->|Updates| afterAwaits[AfterAwaits Map]
+
+    initHook --> beforeHook[async_hooks.createHook.before]
+    beforeHook -->|Writes| fsWrite3[fs.writeSync: Await End]
+    fsWrite3 --> stdout3[stdout]
+
+    initHook --> destroyHook[async_hooks.createHook.destroy]
+    destroyHook -->|Deletes from| asyncFunctions
+    destroyHook -->|Deletes from| awaits
+
+    initHook --> promiseResolveHook[async_hooks.createHook.promiseResolve]
+    promiseResolveHook -->|Deletes from| asyncFunctions
+
+    sleep1 -->|Uses| oldPromise[oldPromise]
+    sleep2 -->|Uses| oldPromise
+    sleep3 -->|Uses| oldPromise
+
+    AClass["Global Promise Class (A)"] -->|Extends| oldPromise
+
+    note1[Note: fs.writeSync writes log messages to stdout]
+    note2[Note: Async operations are monitored using async_hooks]
+
+    fsWrite1 -.-> note1
+    fsWrite2 -.-> note1
+    fsWrite3 -.-> note1
+
+    initHook -.-> note2
+    beforeHook -.-> note2
+    destroyHook -.-> note2
+    promiseResolveHook -.-> note2

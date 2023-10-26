@@ -1,11 +1,11 @@
-import retry, { ByPassRetryError } from './retry';
-import axios from 'axios';
+import retry, { ByPassRetryError, RetryOptions } from '../retry';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
-import { HttpMethod, SupportedFeatures } from './constants';
+import { Feature, HttpMethod, SupportedFeatures } from '../constants';
 
 const logger = debug('kadira-core:transport');
 
-export function getAxiosConfig(params) {
+export function getAxiosConfig(params: AxiosRequestConfig): AxiosRequestConfig {
   return {
     ...params,
     // Axios defaults to 10mb. Increases limit to 100mb.
@@ -14,7 +14,13 @@ export function getAxiosConfig(params) {
   };
 }
 
-export function axiosRetry(url, params, retryOptions) {
+export function axiosRetry(
+  url: string,
+  params: {
+    noRetry?: boolean;
+  } & AxiosRequestConfig<any>,
+  retryOptions?: RetryOptions,
+): Promise<AxiosResponse> {
   let retryEnabled = true;
 
   if (params.noRetry) {
@@ -24,12 +30,13 @@ export function axiosRetry(url, params, retryOptions) {
 
   return retry(() => {
     return new Promise((resolve, reject) => {
-      axios(url, getAxiosConfig(params)).then((res) => {
-        return resolve(res);
-      })
-        .catch(err => {
+      axios(url, getAxiosConfig(params))
+        .then((res) => {
+          return resolve(res);
+        })
+        .catch((err) => {
           if (err.response && err.response.status) {
-            let status = err.response.status;
+            const status = err.response.status;
 
             if (status === 401) {
               logger('Error: Unauthorized');
@@ -48,7 +55,7 @@ export function axiosRetry(url, params, retryOptions) {
           }
 
           if (!retryEnabled) {
-            let oldErr = err;
+            const oldErr = err;
             // eslint-disable-next-line no-param-reassign
             err = new ByPassRetryError(oldErr.message);
             err.stack = oldErr.stack;
@@ -60,12 +67,12 @@ export function axiosRetry(url, params, retryOptions) {
   }, retryOptions);
 }
 
-export function parseAllowedFeaturesHeader(header) {
-  const result = {};
+export function parseAllowedFeaturesHeader(header: string) {
+  const result: Record<string, boolean> = {};
 
   if (header) {
-    header.split(',').map(feature => {
-      if (SupportedFeatures[feature]) {
+    header.split(',').map((feature) => {
+      if (SupportedFeatures[feature as Feature]) {
         result[feature] = true;
       }
     });
@@ -74,15 +81,17 @@ export function parseAllowedFeaturesHeader(header) {
   return result;
 }
 
-export function stringifySupportedFeatures(features) {
+export function stringifySupportedFeatures(features: Record<string, boolean>) {
   return Object.entries(features)
-    .reduce((acc, [ key, value ]) => {
+    .reduce((acc: string[], [key, value]) => {
       if (value) {
         acc.push(key);
       }
 
       return acc;
-    }, []).join(',');
+    }, [])
+    .join(',');
 }
 
-export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));

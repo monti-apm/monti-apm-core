@@ -1,14 +1,13 @@
 .*
 *.swp
 *~
-*.iml
 .*.haste_cache.*
 .DS_Store
-.idea
 npm-debug.log
-.eslintcache
 
 node_modules
 scripts
-lib
-.babelrc
+/dist/**.test.d.ts
+/dist/**.test.js
+/dist/**.test.js.map
+/dist/tests

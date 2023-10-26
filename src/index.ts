@@ -1,9 +1,20 @@
-import Clock from './clock.js';
+import Clock from './clock';
 import debug from 'debug';
 // eslint-disable-next-line max-len
-import { ContentType, CoreEvent, EngineEvent, Feature, HttpHeader, SupportedFeatures } from './constants';
+import {
+  ContentType,
+  CoreEvent,
+  EngineEvent,
+  Feature,
+  HttpHeader,
+  SupportedFeatures,
+} from './constants';
 // eslint-disable-next-line max-len
-import { axiosRetry, parseAllowedFeaturesHeader, stringifySupportedFeatures } from './utils';
+import {
+  axiosRetry,
+  parseAllowedFeaturesHeader,
+  stringifySupportedFeatures,
+} from './utils';
 import { hostname } from 'os';
 import EventEmitter2 from 'eventemitter2';
 import { persistentConnectWebSocket } from './utils/websocket-utils';
@@ -11,7 +22,25 @@ import { persistentConnectWebSocket } from './utils/websocket-utils';
 const logger = debug('kadira-core:transport');
 const jobLogger = debug('kadira-core:jobs');
 
-const DEFAULTS = {
+export type Job = {
+  id: string;
+  [key: string]: any;
+};
+
+export type KadiraOptions = {
+  appId: string;
+  appSecret: string;
+  agentVersion: string;
+  endpoint: string;
+  hostname: string;
+  clockSyncInterval: number;
+  dataFlushInterval: number;
+  retryOptions: {
+    maxRetries: number;
+  };
+};
+
+const defaultOptions = {
   appId: '',
   appSecret: '',
   agentVersion: 'unknown',
@@ -21,18 +50,24 @@ const DEFAULTS = {
   dataFlushInterval: 1000 * 10,
   retryOptions: {
     maxRetries: 3, // Same as the previous 4 not counting the first try.
-  }
+  },
 };
 
 // exporting this for if we need to get this as a NPM module.
-export class Kadira extends EventEmitter2 {
+export class Monti extends EventEmitter2 {
   _supportedFeatures = SupportedFeatures;
-  _allowedFeatures = {};
+  _allowedFeatures: Record<string, boolean> = {};
+  _options: KadiraOptions;
+  _headers: Record<string, string> = {};
+  _clock: Clock;
+  _clockSyncInterval: NodeJS.Timeout | null;
+  _disconnectWebSocket: (() => void) | null = null;
+  _disconnected = false;
 
-  constructor(_options) {
+  constructor(_options?: Partial<KadiraOptions>) {
     super();
 
-    this._options = Object.assign({}, DEFAULTS, _options);
+    this._options = Object.assign({}, defaultOptions, _options);
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
@@ -52,41 +87,50 @@ export class Kadira extends EventEmitter2 {
   get _websocketHeaders() {
     return {
       ...this._headers,
-      'monti-supported-features':
-        stringifySupportedFeatures(this._supportedFeatures),
+      'monti-supported-features': stringifySupportedFeatures(
+        this._supportedFeatures,
+      ),
     };
   }
 
-  featureSupported(feature) {
+  featureSupported(feature: string) {
     return Boolean(this._allowedFeatures[feature]);
   }
 
-  connect() {
+  async connect() {
+    this._disconnected = false;
+
     logger('connecting with', this._options);
 
-    return this._checkAuth()
-      .then(() => {
-        this._initWebSocket();
+    await this._checkAuth();
 
-        return this._clock.sync();
-      })
-      .then(() => {
-        this._clockSyncInterval = setInterval(
-          () => this._clock.sync(),
-          this._options.clockSyncInterval
-        );
-      });
+    if (this._disconnected) {
+      return;
+    }
+
+    this._clockSyncInterval = setInterval(
+      () => this._clock.sync(),
+      this._options.clockSyncInterval,
+    );
+
+    await this._clock.sync();
+
+    this._initWebSocket();
   }
 
   disconnect() {
     logger('disconnect');
 
-    clearInterval(this._clockSyncInterval);
+    this._disconnected = true;
+
+    if (this._clockSyncInterval) {
+      clearInterval(this._clockSyncInterval);
+    }
 
     this._disconnectWebSocket?.();
   }
 
-  getJob(id) {
+  getJob(id: string) {
     const data = { action: 'get', params: {} };
     Object.assign(data.params, { id });
 
@@ -100,7 +144,7 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  updateJob(id, diff) {
+  updateJob(id: string, diff: Record<string, any>) {
     const data = { action: 'set', params: {} };
     Object.assign(data.params, diff, { id });
 
@@ -114,14 +158,13 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  // send the given payload to the server
-  sendData(_payload) {
+  sendData(_payload: Record<string, any>) {
     // Needs to be inside a promise so the errors thrown below it
     // are properly caught.
     return new Promise((resolve) => {
       const payload = {
         ..._payload,
-        host: this._options.hostname
+        host: this._options.hostname,
       };
 
       const json = JSON.stringify(payload);
@@ -133,33 +176,38 @@ export class Kadira extends EventEmitter2 {
       const params = {
         data: Buffer.from(json),
         headers: {
-          'content-type': ContentType.JSON
-        }
+          'content-type': ContentType.JSON,
+        },
       };
 
       return resolve(this._send(url, params));
     });
   }
 
-  get(path, options = {}) {
+  get(
+    path: string,
+    options: {
+      noRetry?: boolean;
+    } = {},
+  ) {
     const url = this._options.endpoint + path;
     const params = {
       headers: {
-        ...this._headers
+        ...this._headers,
       },
-      noRetry: options.noRetry
+      noRetry: options.noRetry,
     };
     logger(`get request to ${url}`);
     return this._send(url, params);
   }
 
-  sendStream(path, stream) {
+  sendStream(path: string, stream: ReadableStream) {
     const url = this._options.endpoint + path;
     const params = {
       data: stream,
       headers: {
         ...this._headers,
-        'content-type': ContentType.STREAM
+        'content-type': ContentType.STREAM,
       },
     };
 
@@ -167,11 +215,11 @@ export class Kadira extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  _handleJobEvent(job) {
+  _handleJobEvent(job: Job) {
     this.emit(CoreEvent.JOB_ADDED, job);
   }
 
-  _handleMessage(message) {
+  _handleMessage(message: string) {
     try {
       const { event, data } = JSON.parse(message);
 
@@ -181,11 +229,8 @@ export class Kadira extends EventEmitter2 {
         default:
           jobLogger(`unknown event ${event}`);
       }
-    } catch (error) {
-      console.error(
-        'Monti APM: Failed to parse message',
-        message,
-      );
+    } catch (error: any) {
+      console.error('Monti APM: Failed to parse message', message);
       console.error(error.stack);
     }
   }
@@ -196,10 +241,9 @@ export class Kadira extends EventEmitter2 {
     }
 
     const { disconnect } = persistentConnectWebSocket(
-      this,
       this._options.endpoint,
       this._websocketHeaders,
-      this._handleMessage.bind(this)
+      this._handleMessage.bind(this),
     );
 
     this._disconnectWebSocket = disconnect;
@@ -214,25 +258,33 @@ export class Kadira extends EventEmitter2 {
 
     const res = await axiosRetry(uri, params, this._options.retryOptions);
 
-    this._allowedFeatures =
-      parseAllowedFeaturesHeader(res.headers[HttpHeader.ACCEPT_FEATURES]);
+    this._allowedFeatures = parseAllowedFeaturesHeader(
+      res.headers[HttpHeader.ACCEPT_FEATURES],
+    );
 
     return res.data;
   }
 
   // communicates with the server with http
   // Also handles response http status codes and retries
-  _send(url, params) {
-    return axiosRetry(url, {
-      ...params,
-      headers: {
-        ...this._headers,
-        ...params.headers,
+  async _send(url: string, params: Record<string, any>) {
+    const res = await axiosRetry(
+      url,
+      {
+        ...params,
+        headers: {
+          ...this._headers,
+          ...params.headers,
+        },
       },
-    }, this._options.retryOptions).then(res => res.data);
+      this._options.retryOptions,
+    );
+    return res.data;
   }
 }
 
-export default Kadira;
+export const Kadira = Monti;
+
+export default Monti;
 
 export * from './constants';

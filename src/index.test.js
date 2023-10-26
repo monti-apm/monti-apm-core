@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import server from './_server.js';
-import Kadira from '../index.js';
-import { ByPassRetryError } from '../retry.js';
+import server from './tests/server';
+import Kadira from './index';
+import { ByPassRetryError } from './retry';
 import { Readable } from 'stream';
 import { expect } from 'chai';
 import { hostname } from 'os';
@@ -64,14 +64,14 @@ describe('kadira', function () {
       kadira.disconnect();
 
       await kadira.sendData({
-        test1: [ { a: 'b' }, { c: 'd' } ],
-        test2: [ { e: 'f' } ],
+        test1: [{ a: 'b' }, { c: 'd' }],
+        test2: [{ e: 'f' }],
       });
 
       assert.deepStrictEqual(server.getData(), {
         host: kadira._options.hostname,
-        test1: [ { a: 'b' }, { c: 'd' } ],
-        test2: [ { e: 'f' } ],
+        test1: [{ a: 'b' }, { c: 'd' }],
+        test2: [{ e: 'f' }],
       });
     });
 
@@ -93,11 +93,10 @@ describe('kadira', function () {
     });
 
     it('should send agent version', async () => {
-      const options = Object.assign(
-        {},
-        validOpts,
-        { dataFlushInterval: 100, agentVersion: '1.5.0' }
-      );
+      const options = Object.assign({}, validOpts, {
+        dataFlushInterval: 100,
+        agentVersion: '1.5.0',
+      });
       const kadira = new Kadira(options);
       await kadira.connect();
       kadira.disconnect();
@@ -107,21 +106,19 @@ describe('kadira', function () {
     });
 
     it('should reject when unable to stringify json', (done) => {
-      const options = Object.assign(
-        {},
-        validOpts,
-        { dataFlushInterval: 100, agentVersion: '1.5.0' }
-      );
+      const options = Object.assign({}, validOpts, {
+        dataFlushInterval: 100,
+        agentVersion: '1.5.0',
+      });
       const kadira = new Kadira(options);
 
-      let a = {};
+      const a = {};
       a.a = a;
 
-      kadira.sendData(a)
-        .catch((e) => {
-          assert.strictEqual(e.message.includes('circular structure'), true);
-          done();
-        });
+      kadira.sendData(a).catch((e) => {
+        assert.strictEqual(e.message.includes('circular structure'), true);
+        done();
+      });
     });
   });
 
@@ -182,7 +179,7 @@ describe('kadira', function () {
       await kadira.connect();
       kadira.disconnect();
 
-      var s = new Readable();
+      const s = new Readable();
       s.push('content');
       s.push(null);
 
@@ -219,7 +216,6 @@ describe('kadira', function () {
         params: { id: 'job-0' },
       });
 
-
       kadira.disconnect();
     });
   });
@@ -234,9 +230,9 @@ describe('kadira', function () {
     });
 
     describe('with bad login info', () => {
-      it('should throw an error', done => {
+      it('should throw an error', (done) => {
         const kadira = new Kadira(invldOpts);
-        kadira._checkAuth().catch(err => {
+        kadira._checkAuth().catch((err) => {
           assert.strictEqual(err.message, 'Unauthorized');
           done();
         });

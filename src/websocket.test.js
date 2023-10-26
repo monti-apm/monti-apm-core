@@ -1,11 +1,10 @@
-/* eslint-disable max-len */
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import server, { connections, wss } from './_server.js';
-import Kadira, { WebSocketEvent } from '../index.js';
 import { expect } from 'chai';
-import { CoreEvent, EngineEvent } from '../constants';
-import { sleep } from '../utils';
-import { WebSocketEvents } from '../utils/websocket-utils';
+import { WebSocketEvents } from './utils/websocket-utils';
+import { CoreEvent, EngineEvent, WebSocketEvent } from './constants';
+import Kadira from './index';
+import { sleep } from './utils';
+import server, { connections, wss } from './tests/server';
 
 function send(data) {
   connections.values().next().value.send(JSON.stringify(data));
@@ -16,7 +15,7 @@ describe('WebSockets', function () {
   const options = {
     appId: 'test-app-id',
     appSecret: 'test-app-secret',
-    endpoint
+    endpoint,
   };
 
   beforeEach((done) => {
@@ -34,7 +33,7 @@ describe('WebSockets', function () {
     await kadira.connect();
 
     expect(kadira._allowedFeatures).to.be.deep.equal({
-      websockets: true
+      websockets: true,
     });
 
     kadira.disconnect();
@@ -51,15 +50,16 @@ describe('WebSockets', function () {
       event: EngineEvent.JOB_CREATED,
       data: {
         _id: 'id1',
-        foo: 'bar'
-      }
+        foo: 'bar',
+      },
     });
 
-    const [ job ] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await kadira.waitFor(CoreEvent.JOB_ADDED);
 
-    expect(job).to.be.deep.equal( {
-      _id: 'id1', foo: 'bar'
-    } );
+    expect(job).to.be.deep.equal({
+      _id: 'id1',
+      foo: 'bar',
+    });
 
     kadira.disconnect();
   });
@@ -75,11 +75,11 @@ describe('WebSockets', function () {
       event: EngineEvent.JOB_CREATED,
       data: {
         _id: 'id1',
-        foo: 'bar'
-      }
+        foo: 'bar',
+      },
     });
 
-    const [ event ] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [event] = await kadira.waitFor(CoreEvent.JOB_ADDED);
 
     expect(event).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
@@ -87,11 +87,11 @@ describe('WebSockets', function () {
       event: EngineEvent.JOB_CREATED,
       data: {
         _id: 'id1',
-        foo: 'bar'
-      }
+        foo: 'bar',
+      },
     });
 
-    const [ job ] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await kadira.waitFor(CoreEvent.JOB_ADDED);
 
     expect(job).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
@@ -122,7 +122,6 @@ describe('WebSockets', function () {
     kadira.disconnect();
   }).timeout(10000);
 
-
   it('should contain supported features header', async () => {
     const kadira = new Kadira(options);
 
@@ -131,7 +130,7 @@ describe('WebSockets', function () {
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
     expect(kadira._websocketHeaders).to.contain({
-      'monti-supported-features': 'websockets'
+      'monti-supported-features': 'websockets',
     });
 
     kadira.disconnect();
@@ -142,7 +141,9 @@ describe('WebSockets', function () {
 
     kadira.connect();
 
-    const [ ws ] = await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
+    const [ws] = await WebSocketEvents.waitFor(
+      WebSocketEvent.WEBSOCKET_CONNECTED,
+    );
 
     let pingCount = 0;
 
@@ -152,8 +153,7 @@ describe('WebSockets', function () {
 
     // We override the pong method to prevent the client from sending a pong
     // eslint-disable-next-line no-empty-function
-    ws.pong = () => {
-    };
+    ws.pong = () => {};
 
     await sleep(300);
 
@@ -168,7 +168,9 @@ describe('WebSockets', function () {
 
     kadira.connect();
 
-    const [ ws ] = await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
+    const [ws] = await WebSocketEvents.waitFor(
+      WebSocketEvent.WEBSOCKET_CONNECTED,
+    );
 
     let pingCount = 0;
 

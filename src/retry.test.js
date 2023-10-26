@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import retry, { ByPassRetryError, MaxRetryError } from '../retry.js';
+import retry, { ByPassRetryError, MaxRetryError } from './retry';
 
 describe('retry', function () {
   it('should retry N times', async function () {
@@ -11,15 +11,18 @@ describe('retry', function () {
     const err = new Error('Some Error');
 
     try {
-      result = await retry(() => {
-        count += 1;
-        return new Promise((_, r) => r(err));
-      }, { maxRetries: 3 });
+      result = await retry(
+        () => {
+          count += 1;
+          return new Promise((_, r) => r(err));
+        },
+        { maxRetries: 3 },
+      );
     } catch (e) {
       assert.strictEqual(e instanceof MaxRetryError, true);
       assert.strictEqual(
         e.message,
-        `Reached maximum retry limit for ${err.message}`
+        `Reached maximum retry limit for ${err.message}`,
       );
       erred = true;
     }

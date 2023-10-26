@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import server from './_server.js';
-import Clock from '../clock.js';
+import server from './tests/server';
+import Clock from './clock';
 
 describe('clock', function () {
   const endpoint = 'http://localhost:8000/simplentp/sync';
@@ -20,19 +20,19 @@ describe('clock', function () {
   });
 
   it('should set diff value', async function () {
-    const clock = new Clock({endpoint});
+    const clock = new Clock({ endpoint });
     await clock.sync();
     assert(inRange(clock._diff, -1100, -900));
   });
 
   it('should return fixed current time', async function () {
-    const clock = new Clock({endpoint});
+    const clock = new Clock({ endpoint });
     await clock.sync();
     assert(inRange(clock.getTime() - Date.now(), -1100, -900));
   });
 
   it('should return fixed timestamps', async function () {
-    const clock = new Clock({endpoint});
+    const clock = new Clock({ endpoint });
     await clock.sync();
     assert(inRange(clock.fixTime(1e4) - 1e4, -1100, -900));
   });
