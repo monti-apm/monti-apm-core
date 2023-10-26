@@ -62,6 +62,7 @@ export class Monti extends EventEmitter2 {
   _clock: Clock;
   _clockSyncInterval: NodeJS.Timeout | null;
   _disconnectWebSocket: (() => void) | null = null;
+  _disconnected = false;
 
   constructor(_options?: Partial<KadiraOptions>) {
     super();
@@ -97,22 +98,30 @@ export class Monti extends EventEmitter2 {
   }
 
   async connect() {
+    this._disconnected = false;
+
     logger('connecting with', this._options);
 
     await this._checkAuth();
 
-    this._initWebSocket();
-
-    await this._clock.sync();
+    if (this._disconnected) {
+      return;
+    }
 
     this._clockSyncInterval = setInterval(
       () => this._clock.sync(),
       this._options.clockSyncInterval,
     );
+
+    this._clock.sync();
+
+    this._initWebSocket();
   }
 
   disconnect() {
     logger('disconnect');
+
+    this._disconnected = true;
 
     if (this._clockSyncInterval) {
       clearInterval(this._clockSyncInterval);
