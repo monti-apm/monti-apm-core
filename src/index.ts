@@ -19,8 +19,8 @@ import { hostname } from 'os';
 import EventEmitter2 from 'eventemitter2';
 import { persistentConnectWebSocket } from './utils/websocket-utils';
 
-const logger = debug('monti-core:transport');
-const jobLogger = debug('monti-core:jobs');
+const logger = debug('monti-apm-core:transport');
+const jobLogger = debug('monti-apm-core:jobs');
 
 export type Job = {
   id: string;
