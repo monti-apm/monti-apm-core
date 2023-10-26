@@ -33,8 +33,8 @@ export function connectWebSocket(
     ws.on(WebSocketEvent.ERROR, errorHandler);
 
     ws.on(WebSocketEvent.OPEN, () => {
-      ws.off(WebSocketEvent.CLOSE, errorHandler);
-      ws.off(WebSocketEvent.ERROR, errorHandler);
+      ws.removeEventListener(WebSocketEvent.CLOSE, errorHandler);
+      ws.removeEventListener(WebSocketEvent.ERROR, errorHandler);
 
       WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
 
