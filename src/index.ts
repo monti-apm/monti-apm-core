@@ -44,7 +44,7 @@ const defaultOptions = {
   appId: '',
   appSecret: '',
   agentVersion: 'unknown',
-  endpoint: 'https://enginex.monti.io',
+  endpoint: 'https://engine.montiapm.com/',
   hostname: hostname(),
   clockSyncInterval: 1000 * 60,
   dataFlushInterval: 1000 * 10,
