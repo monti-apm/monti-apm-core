@@ -113,7 +113,7 @@ export class Monti extends EventEmitter2 {
       this._options.clockSyncInterval,
     );
 
-    this._clock.sync();
+    await this._clock.sync();
 
     this._initWebSocket();
   }
