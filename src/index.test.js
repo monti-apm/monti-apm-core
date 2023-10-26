@@ -1,13 +1,13 @@
 import assert from 'assert';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import server from './tests/server';
-import Kadira from './index';
+import Monti from './index';
 import { ByPassRetryError } from './retry';
 import { Readable } from 'stream';
 import { expect } from 'chai';
 import { hostname } from 'os';
 
-describe('kadira', function () {
+describe('monti', function () {
   const endpoint = 'http://localhost:8000';
   const validAuth = { appId: 'test-app-id', appSecret: 'test-app-secret' };
   const validOpts = Object.assign({ endpoint }, validAuth);
@@ -29,47 +29,47 @@ describe('kadira', function () {
   describe('connect', function () {
     it('should throw with wrong info', async function () {
       let erred = false;
-      const kadira = new Kadira(invldOpts);
+      const monti = new Monti(invldOpts);
 
       try {
-        await kadira.connect();
+        await monti.connect();
       } catch (e) {
         assert.strictEqual(e instanceof ByPassRetryError, true);
         erred = true;
       }
 
       assert(erred);
-      kadira.disconnect();
+      monti.disconnect();
     });
 
     it('should connect with correct info', async function () {
-      const kadira = new Kadira(validOpts);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(validOpts);
+      await monti.connect();
+      monti.disconnect();
     });
 
     it('should sync the diff value', async function () {
-      const kadira = new Kadira(validOpts);
-      await kadira.connect();
-      kadira.disconnect();
-      assert(inRange(kadira._clock._diff, -1100, -900));
+      const monti = new Monti(validOpts);
+      await monti.connect();
+      monti.disconnect();
+      assert(inRange(monti._clock._diff, -1100, -900));
     });
   });
 
   describe('sendData', function () {
     it('should send data to the server', async function () {
       const options = Object.assign({}, validOpts, { dataFlushInterval: 100 });
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
-      await kadira.sendData({
+      await monti.sendData({
         test1: [{ a: 'b' }, { c: 'd' }],
         test2: [{ e: 'f' }],
       });
 
       assert.deepStrictEqual(server.getData(), {
-        host: kadira._options.hostname,
+        host: monti._options.hostname,
         test1: [{ a: 'b' }, { c: 'd' }],
         test2: [{ e: 'f' }],
       });
@@ -80,11 +80,11 @@ describe('kadira', function () {
       const dataString = Buffer.alloc(30000000, '0').toString();
 
       const options = Object.assign({}, validOpts, { dataFlushInterval: 100 });
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
-      await kadira.sendData({ content: dataString });
+      await monti.sendData({ content: dataString });
 
       expect(server.getData()).to.deep.equal({
         content: dataString,
@@ -97,11 +97,11 @@ describe('kadira', function () {
         dataFlushInterval: 100,
         agentVersion: '1.5.0',
       });
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
-      await kadira.sendData({});
+      await monti.sendData({});
       assert.strictEqual(server.getHeaders()['monti-agent-version'], '1.5.0');
     });
 
@@ -110,12 +110,12 @@ describe('kadira', function () {
         dataFlushInterval: 100,
         agentVersion: '1.5.0',
       });
-      const kadira = new Kadira(options);
+      const monti = new Monti(options);
 
       const a = {};
       a.a = a;
 
-      kadira.sendData(a).catch((e) => {
+      monti.sendData(a).catch((e) => {
         assert.strictEqual(e.message.includes('circular structure'), true);
         done();
       });
@@ -125,24 +125,24 @@ describe('kadira', function () {
   describe('get', function () {
     it('should make get request', async function () {
       const options = Object.assign({}, validOpts);
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
-      const result = await kadira.get('/_test/text');
+      const result = await monti.get('/_test/text');
       assert.strictEqual(result, 'hello-world');
     });
 
     it('should allow disabling retries', async function () {
       this.timeout(20000);
       const options = Object.assign({}, validOpts);
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
       server.setCount(0);
 
       try {
-        await kadira.get('/_test/e5xx', { noRetry: true });
+        await monti.get('/_test/e5xx', { noRetry: true });
       } catch (e) {
         assert.strictEqual(server.getCount(), 1);
         assert.strictEqual(e.message, 'Request failed: 500');
@@ -155,13 +155,13 @@ describe('kadira', function () {
     it('should allow disabling retries for network errors', async function () {
       this.timeout(20000);
       const options = Object.assign({}, validOpts);
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
       server.setCount(0);
 
       try {
-        await kadira.get('/_test/network-err', { noRetry: true });
+        await monti.get('/_test/network-err', { noRetry: true });
       } catch (e) {
         assert.strictEqual(server.getCount(), 1);
         assert.strictEqual(e.message, 'socket hang up');
@@ -175,15 +175,15 @@ describe('kadira', function () {
   describe('sendStream', function () {
     it('should send stream to the server', async function () {
       const options = Object.assign({}, validOpts);
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
       const s = new Readable();
       s.push('content');
       s.push(null);
 
-      await kadira.sendStream('/stream', s);
+      await monti.sendStream('/stream', s);
 
       assert.strictEqual(server.getData(), 'content');
     });
@@ -191,52 +191,52 @@ describe('kadira', function () {
 
   describe('updateJob', function () {
     it('should send data to the server', async function () {
-      const kadira = new Kadira(validOpts);
-      await kadira.connect();
-      await kadira.updateJob('job-0', { foo: 'bar' });
+      const monti = new Monti(validOpts);
+      await monti.connect();
+      await monti.updateJob('job-0', { foo: 'bar' });
 
       assert.deepStrictEqual(server.getJobs(), {
         action: 'set',
         params: { id: 'job-0', foo: 'bar' },
       });
 
-      kadira.disconnect();
+      monti.disconnect();
     });
   });
 
   describe('getJob', function () {
     it('should send data to the server', async function () {
-      const kadira = new Kadira(validOpts);
-      await kadira.connect();
+      const monti = new Monti(validOpts);
+      await monti.connect();
 
-      const res = await kadira.getJob('job-0');
+      const res = await monti.getJob('job-0');
       assert.deepStrictEqual(res, { aa: 10 });
       assert.deepStrictEqual(server.getJobs(), {
         action: 'get',
         params: { id: 'job-0' },
       });
 
-      kadira.disconnect();
+      monti.disconnect();
     });
   });
 
   describe('_checkAuth', () => {
     describe('with correct login info', () => {
       it('should just return', async () => {
-        const kadira = new Kadira(validOpts);
-        await kadira._checkAuth();
-        kadira.disconnect();
+        const monti = new Monti(validOpts);
+        await monti._checkAuth();
+        monti.disconnect();
       });
     });
 
     describe('with bad login info', () => {
       it('should throw an error', (done) => {
-        const kadira = new Kadira(invldOpts);
-        kadira._checkAuth().catch((err) => {
+        const monti = new Monti(invldOpts);
+        monti._checkAuth().catch((err) => {
           assert.strictEqual(err.message, 'Unauthorized');
           done();
         });
-        kadira.disconnect();
+        monti.disconnect();
       });
     });
   });

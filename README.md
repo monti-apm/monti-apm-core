@@ -1,6 +1,6 @@
 # Monti APM Core
 
-This is a fork of [kadira-core](https://github.com/kadirahq/kadira-core).
+This is a fork of [monti-core](https://github.com/montihq/monti-core).
 
 Handle core functionalities of Monti APM such as
 
@@ -12,5 +12,5 @@ Handle core functionalities of Monti APM such as
 You can debug what's happening inside the Monti APM transport by exposing following environment variable:
 
 ```
-export `DEBUG=kadira-core:transport`
+export `DEBUG=monti-apm-core:transport`
 ```

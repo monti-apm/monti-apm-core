@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
 import { Feature, HttpMethod, SupportedFeatures } from '../constants';
 
-const logger = debug('kadira-core:transport');
+const logger = debug('monti-apm-core:transport');
 
 export function getAxiosConfig(params: AxiosRequestConfig): AxiosRequestConfig {
   return {
