@@ -1,5 +1,10 @@
 # Change Log
 
+## Next
+- rename to @monti-apm/core
+- rewrite to typescript
+- minimum Node version raised from 4 to 8
+
 ## 1.7.5
 May 23, 2022
 
