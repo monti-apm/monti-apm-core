@@ -1,7 +1,5 @@
 # Monti APM Core
 
-This is a fork of [kadira-core](https://github.com/kadirahq/kadira-core).
-
 Handle core functionalities of Monti APM such as
 
 * Transport
