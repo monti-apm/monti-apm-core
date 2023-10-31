@@ -1,6 +1,6 @@
 # Monti APM Core
 
-This is a fork of [monti-apm-core](https://github.com/monti-apm/monti-apm-core).
+This is a fork of [monti-core](https://github.com/monti-apm/monti-apm-core).
 
 Handle core functionalities of Monti APM such as
 
