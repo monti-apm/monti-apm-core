@@ -162,6 +162,10 @@ export class AwaitDetector {
       // Awaited a thenable or non-promise value
       this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
     } else if (this.awaits.has(asyncId)) {
+      if (!this.awaitData.has(asyncId)) return;
+      const [triggerAsyncId] = this.awaitData.get(asyncId) as [number];
+      this.onAwaitEnd(asyncId, triggerAsyncId);
+      this.awaitData.delete(asyncId);
       // Awaited a native promise
       this.log(`await end:  ${asyncId} (B)`);
     }
