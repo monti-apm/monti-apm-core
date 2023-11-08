@@ -12,6 +12,7 @@ type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
 export class AwaitDetector {
   static OldPromiseCtor = global.Promise;
   static Storage = new AsyncLocalStorage();
+  static IgnoreStorage = new AsyncLocalStorage();
   static Symbol = Symbol('AsyncDetector');
 
   start = Date.now();
@@ -127,6 +128,8 @@ export class AwaitDetector {
       return;
     }
 
+    if (AwaitDetector.IgnoreStorage.getStore()) return;
+
     const isAsyncFunction = triggerAsyncId === executionAsyncId();
 
     if (isAsyncFunction) {
@@ -208,5 +211,9 @@ export class AwaitDetector {
       },
       callback,
     );
+  }
+
+  ignore(callback: (...args: any[]) => any) {
+    return AwaitDetector.IgnoreStorage.run(true, callback);
   }
 }
