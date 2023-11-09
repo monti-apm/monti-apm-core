@@ -19,12 +19,12 @@ export default class Clock {
   }
 
   getTime() {
-    // current time on Kadira server
+    // current time on Monti server
     return this._clientTS() + this._diff;
   }
 
   fixTime(timestamp: number) {
-    // `timestamp` on Kadira server
+    // `timestamp` on Monti server
     return timestamp + this._diff;
   }
 

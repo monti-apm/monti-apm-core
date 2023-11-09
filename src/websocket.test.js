@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { WebSocketEvents } from './utils/websocket-utils';
 import { CoreEvent, EngineEvent, WebSocketEvent } from './constants';
-import Kadira from './index';
+import Monti from './index';
 import { sleep } from './utils';
 import server, { connections, wss } from './tests/server';
 
@@ -28,21 +28,21 @@ describe('WebSockets', function () {
   });
 
   it('should be enabled', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    await kadira.connect();
+    await monti.connect();
 
-    expect(kadira._allowedFeatures).to.be.deep.equal({
+    expect(monti._allowedFeatures).to.be.deep.equal({
       websockets: true,
     });
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 
   it('should receive new events', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    kadira.connect();
+    monti.connect();
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
@@ -54,20 +54,20 @@ describe('WebSockets', function () {
       },
     });
 
-    const [job] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await monti.waitFor(CoreEvent.JOB_ADDED);
 
     expect(job).to.be.deep.equal({
       _id: 'id1',
       foo: 'bar',
     });
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 
   it('should emit event for new jobs and ignore jobs already added', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    kadira.connect();
+    monti.connect();
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
@@ -79,7 +79,7 @@ describe('WebSockets', function () {
       },
     });
 
-    const [event] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [event] = await monti.waitFor(CoreEvent.JOB_ADDED);
 
     expect(event).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
@@ -91,11 +91,11 @@ describe('WebSockets', function () {
       },
     });
 
-    const [job] = await kadira.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await monti.waitFor(CoreEvent.JOB_ADDED);
 
     expect(job).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 
   it('should attempt connection reconnection until stopped', async () => {
@@ -103,13 +103,13 @@ describe('WebSockets', function () {
 
     wss._webSocketEnabled = false;
 
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
     WebSocketEvents.on(WebSocketEvent.WEBSOCKET_ATTEMPT, () => {
       attemptCount++;
     });
 
-    await kadira.connect();
+    await monti.connect();
 
     await sleep(1000);
 
@@ -119,27 +119,27 @@ describe('WebSockets', function () {
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED, 2000);
 
-    kadira.disconnect();
+    monti.disconnect();
   }).timeout(10000);
 
   it('should contain supported features header', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    kadira.connect();
+    monti.connect();
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
-    expect(kadira._websocketHeaders).to.contain({
+    expect(monti._websocketHeaders).to.contain({
       'monti-supported-features': 'websockets',
     });
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 
   it('should timeout if no pong message received', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    kadira.connect();
+    monti.connect();
 
     const [ws] = await WebSocketEvents.waitFor(
       WebSocketEvent.WEBSOCKET_CONNECTED,
@@ -160,13 +160,13 @@ describe('WebSockets', function () {
     expect(ws.readyState).to.be.equal(3);
     expect(pingCount).to.be.above(0);
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 
   it('should maintain connection if pong message received', async () => {
-    const kadira = new Kadira(options);
+    const monti = new Monti(options);
 
-    kadira.connect();
+    monti.connect();
 
     const [ws] = await WebSocketEvents.waitFor(
       WebSocketEvent.WEBSOCKET_CONNECTED,
@@ -184,6 +184,6 @@ describe('WebSockets', function () {
 
     expect(pingCount).to.be.above(0);
 
-    kadira.disconnect();
+    monti.disconnect();
   });
 });

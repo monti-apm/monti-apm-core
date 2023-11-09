@@ -6,12 +6,13 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
     "test:dist": "mocha 'dist/**/*.test.js' --exit",
     "test": "mocha src/**/*.test.js --require=ts-node/register/transpile-only --exit",
     "test:watch": "nodemon --exec 'npm run test' -e js,ts --watch src",
-    "test:debug": "cross-env DEBUG=kadira-core:* npm run test:watch",
+    "test:debug": "cross-env DEBUG=monti-apm-core:* npm run test:watch",
     "prepublishOnly": "npm run build"
   },
   "repository": {

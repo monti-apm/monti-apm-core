@@ -19,15 +19,15 @@ import { hostname } from 'os';
 import EventEmitter2 from 'eventemitter2';
 import { persistentConnectWebSocket } from './utils/websocket-utils';
 
-const logger = debug('kadira-core:transport');
-const jobLogger = debug('kadira-core:jobs');
+const logger = debug('monti-apm-core:transport');
+const jobLogger = debug('monti-apm-core:jobs');
 
 export type Job = {
   id: string;
   [key: string]: any;
 };
 
-export type KadiraOptions = {
+export type MontiOptions = {
   appId: string;
   appSecret: string;
   agentVersion: string;
@@ -44,7 +44,7 @@ const defaultOptions = {
   appId: '',
   appSecret: '',
   agentVersion: 'unknown',
-  endpoint: 'https://enginex.kadira.io',
+  endpoint: 'https://engine.montiapm.com/',
   hostname: hostname(),
   clockSyncInterval: 1000 * 60,
   dataFlushInterval: 1000 * 10,
@@ -57,22 +57,22 @@ const defaultOptions = {
 export class Monti extends EventEmitter2 {
   _supportedFeatures = SupportedFeatures;
   _allowedFeatures: Record<string, boolean> = {};
-  _options: KadiraOptions;
+  _options: MontiOptions;
   _headers: Record<string, string> = {};
   _clock: Clock;
   _clockSyncInterval: NodeJS.Timeout | null;
   _disconnectWebSocket: (() => void) | null = null;
   _disconnected = false;
 
-  constructor(_options?: Partial<KadiraOptions>) {
+  constructor(_options?: Partial<MontiOptions>) {
     super();
 
     this._options = Object.assign({}, defaultOptions, _options);
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
-      'kadira-app-id': this._options.appId,
-      'kadira-app-secret': this._options.appSecret,
+      'monti-app-id': this._options.appId,
+      'monti-app-secret': this._options.appSecret,
       'monti-agent-version': this._options.agentVersion,
       'monti-agent-hostname': this._options.hostname,
     };
@@ -282,8 +282,6 @@ export class Monti extends EventEmitter2 {
     return res.data;
   }
 }
-
-export const Kadira = Monti;
 
 export default Monti;
 

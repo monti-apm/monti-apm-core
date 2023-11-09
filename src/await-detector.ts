@@ -12,6 +12,7 @@ type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
 export class AwaitDetector {
   static OldPromiseCtor = global.Promise;
   static Storage = new AsyncLocalStorage();
+  static IgnoreStorage = new AsyncLocalStorage();
   static Symbol = Symbol('AsyncDetector');
 
   start = Date.now();
@@ -127,6 +128,8 @@ export class AwaitDetector {
       return;
     }
 
+    if (AwaitDetector.IgnoreStorage.getStore()) return;
+
     const isAsyncFunction = triggerAsyncId === executionAsyncId();
 
     if (isAsyncFunction) {
@@ -162,6 +165,10 @@ export class AwaitDetector {
       // Awaited a thenable or non-promise value
       this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
     } else if (this.awaits.has(asyncId)) {
+      if (!this.awaitData.has(asyncId)) return;
+      const [triggerAsyncId] = this.awaitData.get(asyncId) as [number];
+      this.onAwaitEnd(asyncId, triggerAsyncId);
+      this.awaitData.delete(asyncId);
       // Awaited a native promise
       this.log(`await end:  ${asyncId} (B)`);
     }
@@ -204,5 +211,9 @@ export class AwaitDetector {
       },
       callback,
     );
+  }
+
+  ignore(callback: (...args: any[]) => any) {
+    return AwaitDetector.IgnoreStorage.run(true, callback);
   }
 }
