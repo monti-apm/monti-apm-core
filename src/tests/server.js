@@ -115,8 +115,8 @@ export default {
 
 function authenticate(req) {
   return (
-    req.headers['monti-app-id'] === 'test-app-id' &&
-    req.headers['monti-app-secret'] === 'test-app-secret'
+    req.headers['kadira-app-id'] === 'test-app-id' &&
+    req.headers['kadira-app-secret'] === 'test-app-secret'
   );
 }
 

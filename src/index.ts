@@ -71,8 +71,8 @@ export class Monti extends EventEmitter2 {
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
-      'monti-app-id': this._options.appId,
-      'monti-app-secret': this._options.appSecret,
+      'kadira-app-id': this._options.appId,
+      'kadira-app-secret': this._options.appSecret,
       'monti-agent-version': this._options.agentVersion,
       'monti-agent-hostname': this._options.hostname,
     };
