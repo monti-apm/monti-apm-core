@@ -106,7 +106,7 @@ export function persistentConnectWebSocket(
 
         // If not closed locally by the client, we log the error
         if (error.code !== 1006) {
-          console.error(error);
+          console.error(`Monti APM Websocket error: ${error.message}`);
         }
 
         attempts++;
