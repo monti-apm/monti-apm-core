@@ -5,7 +5,6 @@ import {
   AsyncLocalStorage,
   createHook,
   executionAsyncId,
-  executionAsyncResource,
 } from 'async_hooks';
 
 type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
@@ -15,11 +14,11 @@ export class AwaitDetector {
   static Storage = new AsyncLocalStorage();
   static IgnoreStorage = new AsyncLocalStorage();
   static Symbol = Symbol('AsyncDetector');
-  static IsAwait = Symbol('IsAwait');
-  static IsAsyncFunction = Symbol('IsAsyncFunction');
 
   start = Date.now();
 
+  asyncFunctions = new Set();
+  awaits = new Set();
   afterAwaits = new Map();
   ignoreNextPromise = 0;
 
@@ -49,6 +48,7 @@ export class AwaitDetector {
     this.hook = createHook({
       init: this.init.bind(this),
       before: this.before.bind(this),
+      destroy: this.destroy.bind(this),
       promiseResolve: this.promiseResolve.bind(this),
     });
 
@@ -114,7 +114,7 @@ export class AwaitDetector {
     );
   }
 
-  init(asyncId: number, type: string, triggerAsyncId: number, resource: any) {
+  init(asyncId: number, type: string, triggerAsyncId: number) {
     if (type !== 'PROMISE') {
       return;
     }
@@ -133,21 +133,19 @@ export class AwaitDetector {
     const isAsyncFunction = triggerAsyncId === executionAsyncId();
 
     if (isAsyncFunction) {
-      resource[AwaitDetector.IsAsyncFunction] = true;
+      this.asyncFunctions.add(asyncId);
       this.log(`${type}(${asyncId}): async function start`);
       return;
     }
 
-    const triggerResource = executionAsyncResource() as any;
-
-    if (triggerResource[AwaitDetector.IsAsyncFunction]) {
+    if (this.asyncFunctions.has(triggerAsyncId)) {
       this.onAwaitStart(asyncId, triggerAsyncId);
-      resource[AwaitDetector.IsAwait] = true;
+      this.awaits.add(asyncId);
       this.awaitData.set(asyncId, [triggerAsyncId]);
       this.log(
         `${type}(${asyncId}): await start - async function: ${triggerAsyncId}`,
       );
-    } else if (triggerResource[AwaitDetector.IsAwait]) {
+    } else if (this.awaits.has(triggerAsyncId)) {
       this.afterAwaits.set(asyncId, triggerAsyncId);
     }
   }
@@ -156,8 +154,6 @@ export class AwaitDetector {
     if (!this.isWithinContext()) {
       return;
     }
-
-    const resource = executionAsyncResource() as any;
 
     if (this.afterAwaits.has(asyncId)) {
       const awaitAsyncId = this.afterAwaits.get(asyncId);
@@ -168,7 +164,7 @@ export class AwaitDetector {
       this.awaitData.delete(awaitAsyncId);
       // Awaited a thenable or non-promise value
       this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
-    } else if (resource[AwaitDetector.IsAwait]) {
+    } else if (this.awaits.has(asyncId)) {
       if (!this.awaitData.has(asyncId)) return;
       const [triggerAsyncId] = this.awaitData.get(asyncId) as [number];
       this.onAwaitEnd(asyncId, triggerAsyncId);
@@ -178,12 +174,31 @@ export class AwaitDetector {
     }
   }
 
+  destroy(asyncId: number) {
+    if (!this.isWithinContext()) {
+      return;
+    }
+
+    if (this.asyncFunctions.has(asyncId)) {
+      this.asyncFunctions.delete(asyncId);
+      return;
+    }
+
+    if (this.awaits.has(asyncId)) {
+      this.awaits.delete(asyncId);
+    }
+  }
+
   promiseResolve(asyncId: number) {
     if (!this.isWithinContext()) {
       return;
     }
 
-    if (this.afterAwaits.has(asyncId)) {
+    if (this.asyncFunctions.has(asyncId)) {
+      this.asyncFunctions.delete(asyncId);
+    } else if (this.awaits.has(asyncId)) {
+      this.awaits.delete(asyncId); // Added later
+    } else if (this.afterAwaits.has(asyncId)) {
       this.log(`promise resolve: ${asyncId} (C)`);
       this.afterAwaits.delete(asyncId); // Added later
     }
