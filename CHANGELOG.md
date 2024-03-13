@@ -1,5 +1,12 @@
 # Change Log
 
+## Next
+
+* Improve retry logic for requests
+* Detect features enabled by engine
+* Support websocket connection to receive new jobs
+* Reduce memory usage when engine is down
+
 ## 1.7.5
 May 23, 2022
 
