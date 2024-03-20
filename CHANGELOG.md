@@ -6,6 +6,7 @@
 * Detect features enabled by engine
 * Support websocket connection to receive new jobs
 * Reduce memory usage when engine is down
+* Increase maximum body size
 
 ## 1.7.5
 May 23, 2022
