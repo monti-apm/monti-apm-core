@@ -202,13 +202,20 @@ export class AwaitDetector {
     );
   }
 
-
-    try {
-      return callback();
-    } finally {
-      AwaitDetector.Storage.enterWith(prev);
+  clean() {
+    if (!this.isWithinContext()) {
+      return;
     }
-  }
+
+    let store = AwaitDetector.Storage.getStore() as any;
+
+    if (store) {
+      // Set to undefined to disable the store
+      store[AwaitDetector.Symbol] = undefined;
+      store.asyncFunctions.clear();
+      store.awaits.clear();
+      store.awaitData.clear();
+    }
   }
 
   ignore(callback: (...args: any[]) => any) {
