@@ -20,8 +20,6 @@ export class AwaitDetector {
   afterAwaits = new Map();
   ignoreNextPromise = 0;
 
-  awaitData = new Map<number, [number]>();
-
   hook: AsyncHook;
 
   logging: boolean;
@@ -140,7 +138,7 @@ export class AwaitDetector {
     if (store.asyncFunctions.has(triggerAsyncId)) {
       this.onAwaitStart(asyncId, triggerAsyncId);
       store.awaits.add(asyncId);
-      this.awaitData.set(asyncId, [triggerAsyncId]);
+      store.awaitData.set(asyncId, [triggerAsyncId]);
       this.log(
         `${type}(${asyncId}): await start - async function: ${triggerAsyncId}`,
       );
@@ -159,17 +157,17 @@ export class AwaitDetector {
     if (this.afterAwaits.has(asyncId)) {
       const awaitAsyncId = this.afterAwaits.get(asyncId);
 
-      if (!this.awaitData.has(awaitAsyncId)) return;
-      const [triggerAsyncId] = this.awaitData.get(awaitAsyncId) as [number];
+      if (!store.awaitData.has(awaitAsyncId)) return;
+      const [triggerAsyncId] = store.awaitData.get(awaitAsyncId) as [number];
       this.onAwaitEnd(awaitAsyncId, triggerAsyncId);
-      this.awaitData.delete(awaitAsyncId);
+      store.awaitData.delete(awaitAsyncId);
       // Awaited a thenable or non-promise value
       this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
     } else if (store.awaits.has(asyncId)) {
-      if (!this.awaitData.has(asyncId)) return;
-      const [triggerAsyncId] = this.awaitData.get(asyncId) as [number];
+      if (!store.awaitData.has(asyncId)) return;
+      const [triggerAsyncId] = store.awaitData.get(asyncId) as [number];
       this.onAwaitEnd(asyncId, triggerAsyncId);
-      this.awaitData.delete(asyncId);
+      store.awaitData.delete(asyncId);
       // Awaited a native promise
       this.log(`await end:  ${asyncId} (B)`);
     }
@@ -198,9 +196,19 @@ export class AwaitDetector {
         [AwaitDetector.Symbol]: this,
         asyncFunctions: new Set(),
         awaits: new Set(),
+        awaitData: new Map()
       },
       callback,
     );
+  }
+
+
+    try {
+      return callback();
+    } finally {
+      AwaitDetector.Storage.enterWith(prev);
+    }
+  }
   }
 
   ignore(callback: (...args: any[]) => any) {
