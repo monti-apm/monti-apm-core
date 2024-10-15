@@ -62,7 +62,7 @@ export default function retry<T = any>(
     const attempt = function (lastError: any = null) {
       // Does not include the first attempt to avoid confusion as the
       // option is `max[Re]tries`.
-      if (count++ > options.maxRetries) {
+      if (count > options.maxRetries) {
         const message = `Reached maximum retry limit for ${
           lastError?.message ?? 'unknown error'
         }`;
@@ -72,6 +72,9 @@ export default function retry<T = any>(
 
       // stop a few milliseconds between retries
       const millis = options.timeFunction(count);
+
+      count++;
+
       sleep(millis)
         .then(() => {
           return getPromise();
