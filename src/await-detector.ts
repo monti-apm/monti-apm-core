@@ -202,14 +202,16 @@ export class AwaitDetector {
     );
   }
 
-  clean() {
-    if (!this.isWithinContext()) {
+  getStore() {
+    if (!this.isWithinContext){
       return;
     }
 
-    let store = AwaitDetector.Storage.getStore() as any;
+    return AwaitDetector.Storage.getStore() as any;
+  }
 
-    if (store) {
+  clean(store: any) {
+    if (store && store[AwaitDetector.Symbol] === this) {
       // Set to undefined to disable the store
       store[AwaitDetector.Symbol] = undefined;
       store.asyncFunctions.clear();

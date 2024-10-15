@@ -220,7 +220,7 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
 
         const result = await detector.detect(async () => {
           await sleep(10);
-          detector.clean();
+          detector.clean(detector.getStore());
           await sleep(20);
 
           return true;
