@@ -1,6 +1,7 @@
 # Change Log
 
-## Next
+## 1.8.0
+November 22, 2024
 
 * Improve retry logic for requests
 * Detect features enabled by engine

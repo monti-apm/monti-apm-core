@@ -1,6 +1,6 @@
 {
   "name": "monti-apm-core",
-  "version": "1.8.0-beta.5",
+  "version": "1.8.0",
   "description": "Monti APM Core API",
   "main": "./dist/",
   "options": {
