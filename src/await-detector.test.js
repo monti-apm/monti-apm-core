@@ -114,15 +114,13 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
         const result = await detector.detect(async () => {
           let promise = Promise.resolve();
           console.log('before Promise.all');
-          await Promise.all([
-            promise,
-          ]);
+          await Promise.all([promise]);
           await Promise.resolve(promise).then(async () => {
             console.log('before await');
             // await 0
             console.log('after await');
-          })
-          console.log('after Promise.all')
+          });
+          console.log('after Promise.all');
           await sleep(10);
           await sleep(20);
           await sleep(30);
@@ -156,11 +154,11 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
             promise,
             Promise.resolve(promise).then(async () => {
               console.log('before await');
-              await 0
+              await 0;
               console.log('after await');
-            })
+            }),
           ]);
-          console.log('after Promise.all')
+          console.log('after Promise.all');
           await sleep(10);
           await sleep(20);
           await sleep(30);

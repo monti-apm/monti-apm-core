@@ -86,7 +86,7 @@ export class Monti extends EventEmitter2 {
 
     this._clockSyncInterval = null;
 
-    let proxyUrl = this._options.proxy || process.env.HTTPS_PROXY;
+    const proxyUrl = this._options.proxy || process.env.HTTPS_PROXY;
     if (proxyUrl) {
       this._agent = new HttpsProxyAgent(proxyUrl);
     }
@@ -284,7 +284,7 @@ export class Monti extends EventEmitter2 {
           ...this._headers,
           ...params.headers,
         },
-        httpsAgent: this._agent
+        httpsAgent: this._agent,
       },
       this._options.retryOptions,
     );

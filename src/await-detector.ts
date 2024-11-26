@@ -196,14 +196,14 @@ export class AwaitDetector {
         [AwaitDetector.Symbol]: this,
         asyncFunctions: new Set(),
         awaits: new Set(),
-        awaitData: new Map()
+        awaitData: new Map(),
       },
       callback,
     );
   }
 
   getStore() {
-    if (!this.isWithinContext){
+    if (!this.isWithinContext) {
       return;
     }
 
