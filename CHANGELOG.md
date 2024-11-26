@@ -5,6 +5,7 @@
 - rewrite to typescript
 - minimum Node version raised from 4 to 8
 - rename Kadira export to Monti
+- fix using proxies
 
 ## 1.7.5
 May 23, 2022
