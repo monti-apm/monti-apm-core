@@ -54,7 +54,8 @@
     "axios": "^0.27.2",
     "debug": "^3.2.6",
     "eventemitter2": "^6.4.9",
-    "faye-websocket": "^0.11.4"
+    "faye-websocket": "^0.11.4",
+    "https-proxy-agent": "^7.0.5"
   },
   "volta": {
     "node": "20.9.0"

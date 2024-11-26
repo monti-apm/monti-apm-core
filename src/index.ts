@@ -18,6 +18,7 @@ import {
 import { hostname } from 'os';
 import EventEmitter2 from 'eventemitter2';
 import { persistentConnectWebSocket } from './utils/websocket-utils';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const logger = debug('monti-apm-core:transport');
 const jobLogger = debug('monti-apm-core:jobs');
@@ -38,6 +39,7 @@ export type MontiOptions = {
   retryOptions: {
     maxRetries: number;
   };
+  proxy?: string;
 };
 
 const defaultOptions = {
@@ -63,6 +65,7 @@ export class Monti extends EventEmitter2 {
   _clockSyncInterval: NodeJS.Timeout | null;
   _disconnectWebSocket: (() => void) | null = null;
   _disconnected = false;
+  _agent: HttpsProxyAgent<string> | undefined;
 
   constructor(_options?: Partial<MontiOptions>) {
     super();
@@ -82,6 +85,11 @@ export class Monti extends EventEmitter2 {
     });
 
     this._clockSyncInterval = null;
+
+    let proxyUrl = this._options.proxy || process.env.HTTPS_PROXY;
+    if (proxyUrl) {
+      this._agent = new HttpsProxyAgent(proxyUrl);
+    }
   }
 
   get _websocketHeaders() {
@@ -276,6 +284,7 @@ export class Monti extends EventEmitter2 {
           ...this._headers,
           ...params.headers,
         },
+        httpsAgent: this._agent
       },
       this._options.retryOptions,
     );
