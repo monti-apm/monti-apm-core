@@ -7,9 +7,10 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
 (SupportsAsyncLocalStorage ? describe : describe.skip)(
   'AwaitDetector',
   async () => {
-    const { AwaitDetector } = SupportsAsyncLocalStorage
-      ? await import('./await-detector')
-      : {};
+    let AwaitDetector;
+    if (SupportsAsyncLocalStorage) {
+      AwaitDetector = require('./await-detector').AwaitDetector;
+    }
 
     let detector;
 

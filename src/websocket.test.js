@@ -54,7 +54,7 @@ describe('WebSockets', function () {
       },
     });
 
-    const [job] = await monti.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
     expect(job).to.be.deep.equal({
       _id: 'id1',
@@ -79,7 +79,7 @@ describe('WebSockets', function () {
       },
     });
 
-    const [event] = await monti.waitFor(CoreEvent.JOB_ADDED);
+    const [event] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
     expect(event).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
@@ -91,7 +91,7 @@ describe('WebSockets', function () {
       },
     });
 
-    const [job] = await monti.waitFor(CoreEvent.JOB_ADDED);
+    const [job] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
     expect(job).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
 
