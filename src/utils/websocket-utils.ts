@@ -100,13 +100,16 @@ export function persistentConnectWebSocket(
 
         ws = null;
       } catch (error: any) {
-        // If not closed locally by the client, we log the error
-        if (attempts > 10 && error.code !== 1006) {
-          console.error(
-            `Monti APM WebSocket: Attempt ${attempts + 1} failed (${
-              error.message
-            })`,
-          );
+
+        // Ignore errors from us closing the client
+        if (error.code !== 1006) {
+          // Avoid showing too many errors in the logs. Show the 10th error
+          // and every 100th error
+          if (attempts === 10 || (attempts > 0 && attempts % 100 === 0)) {
+            console.error(
+              `Monti APM: Failed connecting websocket: ${error.message}`,
+            );
+          }
         }
 
         attempts++;

@@ -11,6 +11,7 @@ export class MaxRetryError extends Error {
 }
 
 export class ByPassRetryError extends Error {
+  original: undefined | Error;
   /**
    * reject the promise with this error (in getPromise) to stop retrying.
    */

@@ -224,7 +224,7 @@ export class Monti extends EventEmitter2 {
   }
 
   _handleJobEvent(job: Job) {
-    this.emit(CoreEvent.JOB_ADDED, job);
+    this.emit(CoreEvent.JOB_CREATED, job);
   }
 
   _handleMessage(message: string) {

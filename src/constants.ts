@@ -1,5 +1,5 @@
 export const CoreEvent = {
-  JOB_ADDED: 'job:added',
+  JOB_CREATED: 'job:created',
 
   DISCONNECT: 'disconnect',
 };

@@ -8,8 +8,9 @@ const logger = debug('monti-apm-core:transport');
 export function getAxiosConfig(params: AxiosRequestConfig): AxiosRequestConfig {
   return {
     ...params,
-    // Axios defaults to 10mb. Increases limit to 100mb.
-    maxBodyLength: 100 * 1024 * 1024,
+    // Axios defaults to 10mb. Increases limit to 3gb
+    // (large enough for most heap snapshots).
+    maxBodyLength: 3 * 1024 * 1024 * 1024,
     method: params.method || HttpMethod.POST,
     proxy: false,
   };
@@ -45,7 +46,11 @@ export function axiosRetry(
             } else if (status >= 400 && status < 500) {
               const message = `Agent Error: ${status}`;
               logger(`Error: ${message}`);
-              return reject(new ByPassRetryError(message));
+
+              const bypassError = new ByPassRetryError(message);
+              bypassError.original = err;
+
+              return reject(bypassError);
             }
 
             const message = `Request failed: ${status}`;
