@@ -100,7 +100,6 @@ export function persistentConnectWebSocket(
 
         ws = null;
       } catch (error: any) {
-
         // Ignore errors from us closing the client
         if (error.code !== 1006) {
           // Avoid showing too many errors in the logs. Show the 10th error
