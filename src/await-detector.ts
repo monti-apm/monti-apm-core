@@ -1,77 +1,124 @@
-import { writeSync } from 'fs';
-import { stdout } from 'process';
-import {
-  AsyncHook,
-  AsyncLocalStorage,
-  createHook,
-  executionAsyncId,
-} from 'async_hooks';
+import { promiseHooks } from 'node:v8';
 
-type AsyncCallback = (asyncId: number, triggerAsyncId: number) => void;
+const IS_ASYNC_FUNCTION = 0;
+const IS_FROM_ASYNC_FUNCTION_1 = 1;
+const IS_FROM_ASYNC_FUNCTION_2 = 2;
+
+const ContextSymbol = Symbol('monti-await-detector-context');
+const TypeSymbol = Symbol('monti-await-detector-type');
+const OldContextSymbol = Symbol('monti-await-detector-old-context');
+
+type PromiseWithSymbols = Promise<any> & {
+  [ContextSymbol]: object;
+  [TypeSymbol]: number;
+  [OldContextSymbol]: object;
+};
 
 export class AwaitDetector {
-  static OldPromiseCtor = global.Promise;
-  static Storage = new AsyncLocalStorage();
-  static IgnoreStorage = new AsyncLocalStorage();
-  static Symbol = Symbol('AsyncDetector');
+  static OldPromiseConstructor = global.Promise;
+  static Symbol = Symbol('monti-await-detector-constructor');
 
-  start = Date.now();
+  public destroyed: boolean;
+  private trackingContext: null | object;
 
-  afterAwaits = new Map();
-  ignoreNextPromise = 0;
-
-  hook: AsyncHook;
-
-  logging: boolean;
-  onAwaitStart: AsyncCallback;
-  onAwaitEnd: AsyncCallback;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  private stopHookSet: Function;
+  private nextPromiseFromConstructor: boolean;
+  private onAwaitStart: (promise: Promise<any>, context: object) => void;
+  private onAwaitEnd: (promise: Promise<any>, context: object) => void;
 
   constructor({
-    logging = false,
     onAwaitStart = () => {},
     onAwaitEnd = () => {},
   }: {
-    logging?: boolean;
-    onAwaitStart?: AsyncCallback;
-    onAwaitEnd?: AsyncCallback;
-  } = {}) {
-    this.logging = logging;
+    onAwaitStart: () => void;
+    onAwaitEnd: () => void;
+  }) {
     this.onAwaitStart = onAwaitStart;
     this.onAwaitEnd = onAwaitEnd;
+    this.destroyed = false;
+    this.trackingContext = null;
+    this.nextPromiseFromConstructor = false;
 
-    this.registerPromiseConstructor();
+    this.stopHookSet = promiseHooks.createHook({
+      init: (_promise, _parent) => {
+        const promise = _promise as PromiseWithSymbols;
+        const parent = _parent as PromiseWithSymbols;
 
-    this.hook = createHook({
-      init: this.init.bind(this),
-      before: this.before.bind(this),
-      promiseResolve: this.promiseResolve.bind(this),
+        if (this.nextPromiseFromConstructor) {
+          this.nextPromiseFromConstructor = false;
+          return;
+        }
+
+        if (parent === undefined) {
+          if (this.trackingContext) {
+            promise[TypeSymbol] = IS_ASYNC_FUNCTION;
+            promise[ContextSymbol] = this.trackingContext;
+          }
+
+          return;
+        }
+
+        const parentType = parent[TypeSymbol];
+
+        if (parentType === IS_ASYNC_FUNCTION) {
+          promise[TypeSymbol] = IS_FROM_ASYNC_FUNCTION_1;
+          promise[ContextSymbol] = parent[ContextSymbol];
+        } else if (parentType === IS_FROM_ASYNC_FUNCTION_1) {
+          promise[TypeSymbol] = IS_FROM_ASYNC_FUNCTION_2;
+          promise[ContextSymbol] = parent[ContextSymbol];
+          this.onAwaitStart(promise, parent[ContextSymbol]);
+        }
+      },
+      before: (_promise) => {
+        const promise = _promise as PromiseWithSymbols;
+        if (promise[TypeSymbol] !== IS_FROM_ASYNC_FUNCTION_2) {
+          return;
+        }
+        this.trackingContext = promise[ContextSymbol];
+        promise[OldContextSymbol] = this.trackingContext;
+        this.onAwaitEnd(promise, this.trackingContext);
+      },
+      after: (_promise) => {
+        const promise = _promise as PromiseWithSymbols;
+        if (promise[OldContextSymbol]) {
+          this.trackingContext = promise[OldContextSymbol];
+        }
+      },
     });
 
-    this.enable();
+    this.registerPromiseConstructor();
   }
 
-  enable() {
-    this.hook.enable();
+  destroy() {
+    this.stopHookSet();
+    global.Promise = AwaitDetector.OldPromiseConstructor;
+    this.destroyed = true;
   }
 
-  disable() {
-    this.hook.disable();
-  }
-
-  unregister() {
-    this.disable();
-    global.Promise = AwaitDetector.OldPromiseCtor;
-  }
-
-  log(...args: any[]) {
-    if (!this.logging) {
-      return;
+  detect(fn: () => any, context: object = {}) {
+    if (this.destroyed) {
+      throw new Error('This instance of AwaitDetector was destroyed');
     }
 
-    writeSync(
-      stdout.fd,
-      `${args.join(' ')} [at ${Date.now() - this.start}ms]\n`,
-    );
+    const oldContext = this.trackingContext;
+    this.trackingContext = context;
+
+    try {
+      return fn();
+    } finally {
+      this.trackingContext = oldContext;
+    }
+  }
+
+  ignore(fn: () => any) {
+    const oldContext = this.trackingContext;
+    this.trackingContext = null;
+    try {
+      return fn();
+    } finally {
+      this.trackingContext = oldContext;
+    }
   }
 
   registerPromiseConstructor() {
@@ -89,138 +136,12 @@ export class AwaitDetector {
           reject: (reason?: any) => void,
         ) => void,
       ) {
-        self.ignoreNextPromise++;
+        self.nextPromiseFromConstructor = true;
         super(executor);
       }
     };
 
     // @ts-ignore
     global.Promise[AwaitDetector.Symbol] = true;
-  }
-
-  isWithinContext() {
-    const store = AwaitDetector.Storage.getStore() as any;
-
-    if (store?.[AwaitDetector.Symbol] === this) return true;
-    if (store?.[AwaitDetector.Symbol] === undefined) return false;
-
-    throw new Error(
-      'AwaitDetectorStorage is being used by another AwaitDetector instance',
-    );
-  }
-
-  init(asyncId: number, type: string, triggerAsyncId: number) {
-    if (type !== 'PROMISE') {
-      return;
-    }
-
-    if (!this.isWithinContext()) {
-      return;
-    }
-
-    if (this.ignoreNextPromise > 0) {
-      this.ignoreNextPromise--;
-      return;
-    }
-
-    if (AwaitDetector.IgnoreStorage.getStore()) return;
-
-    const store = AwaitDetector.Storage.getStore() as any;
-
-    const isAsyncFunction = triggerAsyncId === executionAsyncId();
-
-    if (isAsyncFunction) {
-      store.asyncFunctions.add(asyncId);
-      this.log(`${type}(${asyncId}): async function start`);
-      return;
-    }
-
-    if (store.asyncFunctions.has(triggerAsyncId)) {
-      this.onAwaitStart(asyncId, triggerAsyncId);
-      store.awaits.add(asyncId);
-      store.awaitData.set(asyncId, [triggerAsyncId]);
-      this.log(
-        `${type}(${asyncId}): await start - async function: ${triggerAsyncId}`,
-      );
-    } else if (store.awaits.has(triggerAsyncId)) {
-      this.afterAwaits.set(asyncId, triggerAsyncId);
-    }
-  }
-
-  before(asyncId: number) {
-    if (!this.isWithinContext()) {
-      return;
-    }
-
-    const store = AwaitDetector.Storage.getStore() as any;
-
-    if (this.afterAwaits.has(asyncId)) {
-      const awaitAsyncId = this.afterAwaits.get(asyncId);
-
-      if (!store.awaitData.has(awaitAsyncId)) return;
-      const [triggerAsyncId] = store.awaitData.get(awaitAsyncId) as [number];
-      this.onAwaitEnd(awaitAsyncId, triggerAsyncId);
-      store.awaitData.delete(awaitAsyncId);
-      // Awaited a thenable or non-promise value
-      this.log(`await end:  ${this.afterAwaits.get(asyncId)} (A)`);
-    } else if (store.awaits.has(asyncId)) {
-      if (!store.awaitData.has(asyncId)) return;
-      const [triggerAsyncId] = store.awaitData.get(asyncId) as [number];
-      this.onAwaitEnd(asyncId, triggerAsyncId);
-      store.awaitData.delete(asyncId);
-      // Awaited a native promise
-      this.log(`await end:  ${asyncId} (B)`);
-    }
-  }
-
-  promiseResolve(asyncId: number) {
-    if (!this.isWithinContext()) {
-      return;
-    }
-
-    const store = AwaitDetector.Storage.getStore() as any;
-
-    if (store.asyncFunctions.has(asyncId)) {
-      store.asyncFunctions.delete(asyncId);
-    } else if (store.awaits.has(asyncId)) {
-      store.awaits.delete(asyncId); // Added later
-    } else if (this.afterAwaits.has(asyncId)) {
-      this.log(`promise resolve: ${asyncId} (C)`);
-      this.afterAwaits.delete(asyncId); // Added later
-    }
-  }
-
-  detect(callback: (...args: any[]) => any) {
-    return AwaitDetector.Storage.run(
-      {
-        [AwaitDetector.Symbol]: this,
-        asyncFunctions: new Set(),
-        awaits: new Set(),
-        awaitData: new Map(),
-      },
-      callback,
-    );
-  }
-
-  getStore() {
-    if (!this.isWithinContext) {
-      return;
-    }
-
-    return AwaitDetector.Storage.getStore() as any;
-  }
-
-  clean(store: any) {
-    if (store && store[AwaitDetector.Symbol] === this) {
-      // Set to undefined to disable the store
-      store[AwaitDetector.Symbol] = undefined;
-      store.asyncFunctions.clear();
-      store.awaits.clear();
-      store.awaitData.clear();
-    }
-  }
-
-  ignore(callback: (...args: any[]) => any) {
-    return AwaitDetector.IgnoreStorage.run(true, callback);
   }
 }
