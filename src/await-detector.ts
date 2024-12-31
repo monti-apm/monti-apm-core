@@ -6,12 +6,10 @@ const IS_FROM_ASYNC_FUNCTION_2 = 2;
 
 const ContextSymbol = Symbol('monti-await-detector-context');
 const TypeSymbol = Symbol('monti-await-detector-type');
-const OldContextSymbol = Symbol('monti-await-detector-old-context');
 
 type PromiseWithSymbols = Promise<any> & {
   [ContextSymbol]: object;
   [TypeSymbol]: number;
-  [OldContextSymbol]: object;
 };
 
 export class AwaitDetector {
@@ -76,14 +74,13 @@ export class AwaitDetector {
           return;
         }
         this.trackingContext = promise[ContextSymbol];
-        promise[OldContextSymbol] = this.trackingContext;
         this.onAwaitEnd(promise, this.trackingContext);
       },
-      after: (_promise) => {
-        const promise = _promise as PromiseWithSymbols;
-        if (promise[OldContextSymbol]) {
-          this.trackingContext = promise[OldContextSymbol];
-        }
+      after: () => {
+        this.trackingContext = null;
+      },
+      settled: () => {
+        this.trackingContext = null;
       },
     });
 
