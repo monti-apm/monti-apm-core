@@ -4,7 +4,7 @@ import { spy } from 'sinon';
 import { sleep } from './utils';
 import { SupportsAsyncLocalStorage } from './utils/platform';
 
-(SupportsAsyncLocalStorage ? describe.only : describe.skip)(
+(SupportsAsyncLocalStorage ? describe : describe.skip)(
   'AwaitDetector',
   async () => {
     let AwaitDetector;
