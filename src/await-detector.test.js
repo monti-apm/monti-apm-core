@@ -216,6 +216,24 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
         onAwaitEndSpy.restore();
       });
 
+      it('should detect await for sleep function', async () => {
+        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
+        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        await detector.detect(async () => {
+          await sleep(1);
+          await sleep(1);
+        });
+
+        expect(onAwaitStartSpy.callCount).to.be.equal(2);
+        expect(onAwaitEndSpy.callCount).to.be.equal(2);
+
+        onAwaitStartSpy.restore();
+        onAwaitEndSpy.restore();
+      });
+
       it.skip('should stop detecting after clean', async () => {
         const onAwaitStartSpy = spy(detector, 'onAwaitStart');
         const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
