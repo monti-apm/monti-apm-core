@@ -121,15 +121,15 @@ export class AwaitDetector {
     }
   }
 
-  registerPromiseConstructor() {
-    // @ts-ignore
-    if (global.Promise[AwaitDetector.Symbol]) {
-      return;
-    }
-
+  createWrappedPromiseConstructor(OrigPromise: typeof global.Promise) {
     const self = this;
 
-    global.Promise = class<T> extends Promise<T> {
+    // @ts-ignore
+    if (OrigPromise[AwaitDetector.Symbol]) {
+      return OrigPromise;
+    }
+
+    const wrapped = class Promise<T> extends OrigPromise<T> {
       constructor(
         executor: (
           resolve: (value: T | PromiseLike<T>) => void,
@@ -142,6 +142,12 @@ export class AwaitDetector {
     };
 
     // @ts-ignore
-    global.Promise[AwaitDetector.Symbol] = true;
+    wrapped[AwaitDetector.Symbol] = true;
+
+    return wrapped;
+  }
+
+  registerPromiseConstructor() {
+    global.Promise = this.createWrappedPromiseConstructor(global.Promise);
   }
 }
