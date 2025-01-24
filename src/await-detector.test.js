@@ -234,6 +234,12 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
         onAwaitEndSpy.restore();
       });
 
+      it('should not error when calling detect on destroyed detector', () => {
+        detector.destroy();
+
+        expect(() => detector.detect(() => {})).to.not.throw();
+      });
+
       it.skip('should stop detecting after clean', async () => {
         const onAwaitStartSpy = spy(detector, 'onAwaitStart');
         const onAwaitEndSpy = spy(detector, 'onAwaitEnd');

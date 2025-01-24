@@ -95,7 +95,7 @@ export class AwaitDetector {
 
   detect(fn: () => any, context: object = {}) {
     if (this.destroyed) {
-      throw new Error('This instance of AwaitDetector was destroyed');
+      return fn();
     }
 
     const oldContext = this.trackingContext;
