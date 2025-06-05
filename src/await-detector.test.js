@@ -40,6 +40,16 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
         expect(global.Promise).to.equal(originalPromise);
         expect(global.Promise[AwaitDetector.Symbol]).to.be.undefined;
       });
+
+      it('should have native promises instanceof wrapped promise', () => {
+        let WrappedPromise = detector.createWrappedPromiseConstructor(
+          global.Promise,
+        );
+        const prom = (async () => {
+          await 0;
+        })();
+        expect(prom instanceof WrappedPromise).to.be.true;
+      });
     });
 
     describe('detecting await', () => {

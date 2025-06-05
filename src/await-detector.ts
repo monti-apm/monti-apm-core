@@ -7,6 +7,8 @@ const IS_FROM_ASYNC_FUNCTION_2 = 2;
 const ContextSymbol = Symbol('monti-await-detector-context');
 const TypeSymbol = Symbol('monti-await-detector-type');
 
+const nativeHasInstance = Function.prototype[Symbol.hasInstance];
+
 type PromiseWithSymbols = Promise<any> & {
   [ContextSymbol]: object;
   [TypeSymbol]: number;
@@ -135,6 +137,10 @@ export class AwaitDetector {
       ) {
         self.nextPromiseFromConstructor = true;
         super(executor);
+      }
+
+      static [Symbol.hasInstance](obj: any) {
+        return obj instanceof OrigPromise || nativeHasInstance.call(this, obj);
       }
     };
 
