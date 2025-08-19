@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.8.1
+August 19, 2025
+
+* Increase retries and delay between retries in _checkAuth
+
 ## 1.8.0
 November 22, 2024
 
