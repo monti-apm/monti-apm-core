@@ -38,6 +38,7 @@ export type MontiOptions = {
   dataFlushInterval: number;
   retryOptions: {
     maxRetries: number;
+    authRetryDelay: number;
   };
   proxy?: string;
 };
@@ -265,17 +266,17 @@ export class Monti extends EventEmitter2 {
 
     const params = { headers: this._headers };
 
-    let baseDelay = this._options.retryOptions.authRetryDelay || 1000 * 30;
+    const baseDelay = this._options.retryOptions.authRetryDelay || 1000 * 30;
     const retryOptions = {
       maxRetries: 100,
       // with the defaults, retry every 30 - 60 seconds
-      timeFunction: (i) => {
+      timeFunction: (i: number) => {
         if (i === 0) {
           return 0;
         }
 
-        return (baseDelay) + (Math.random() * baseDelay);
-      }
+        return baseDelay + Math.random() * baseDelay;
+      },
     };
 
     const res = await axiosRetry(uri, params, retryOptions);
