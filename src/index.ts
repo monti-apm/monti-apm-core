@@ -52,7 +52,8 @@ const defaultOptions = {
   dataFlushInterval: 1000 * 10,
   retryOptions: {
     maxRetries: 3, // Same as the previous 4 not counting the first try.
-  },
+    authRetryDelay: 1000 * 30
+  }
 };
 
 // exporting this for if we need to get this as a NPM module.
@@ -264,7 +265,20 @@ export class Monti extends EventEmitter2 {
 
     const params = { headers: this._headers };
 
-    const res = await axiosRetry(uri, params, this._options.retryOptions);
+    let baseDelay = this._options.retryOptions.authRetryDelay || 1000 * 30;
+    const retryOptions = {
+      maxRetries: 100,
+      // with the defaults, retry every 30 - 60 seconds
+      timeFunction: (i) => {
+        if (i === 0) {
+          return 0;
+        }
+
+        return (baseDelay) + (Math.random() * baseDelay);
+      }
+    };
+
+    const res = await axiosRetry(uri, params, retryOptions);
 
     this._allowedFeatures = parseAllowedFeaturesHeader(
       res.headers[HttpHeader.ACCEPT_FEATURES],

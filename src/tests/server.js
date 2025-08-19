@@ -76,6 +76,7 @@ let requestCount = 0;
 let latestData = {};
 let latestJobs = {};
 let latestHeaders = {};
+let failedPings = 0;
 
 export default {
   start: (callback) => {
@@ -111,6 +112,9 @@ export default {
   setHeaders: (headers) => {
     latestHeaders = headers;
   },
+  setFailedPings: (count) => {
+    failedPings = count;
+  }
 };
 
 function authenticate(req) {
@@ -141,6 +145,12 @@ app.all('/simplentp/sync', (req, res) => {
 // handle ping requests (only used to verify appId/appSecret values)
 app.all('/ping', (req, res) => {
   requestCount++;
+
+  if (failedPings > 0) {
+    failedPings--;
+    return res.status(500).end('Failed Ping');
+  }
+
   if (authenticate(req)) {
     res.setHeader('accept-features', 'websockets');
     return res.end('');

@@ -7,6 +7,20 @@
 - rename Kadira export to Monti
 - fix using proxies
 
+## 1.8.1
+August 19, 2025
+
+* Increase retries and delay between retries in _checkAuth
+
+## 1.8.0
+November 22, 2024
+
+* Improve retry logic for requests
+* Detect features enabled by engine
+* Support websocket connection to receive new jobs
+* Reduce memory usage when engine is down
+* Increase maximum body size
+
 ## 1.7.5
 May 23, 2022
 

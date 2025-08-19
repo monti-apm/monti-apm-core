@@ -239,5 +239,24 @@ describe('monti', function () {
         monti.disconnect();
       });
     });
+
+    it('should retry after connection error', (done) => {
+      server.setFailedPings(10);
+
+      const monti = new Monti(
+        Object.assign({}, validOpts, {
+          retryOptions: {
+            authRetryDelay: 1,
+          },
+        }),
+      );
+
+      monti._checkAuth().then(() => {
+        assert.strictEqual(server.getCount(), 11);
+        done();
+      });
+
+      monti.disconnect();
+    });
   });
 });
