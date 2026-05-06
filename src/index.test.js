@@ -127,12 +127,12 @@ describe('monti', function () {
     it('should break large arrays into multiple requests', async function () {
       const traces = Array(200).fill({ id: '1', data: 'trace' });
       const options = Object.assign({}, validOpts);
-      const kadira = new Kadira(options);
-      await kadira.connect();
-      kadira.disconnect();
+      const monti = new Monti(options);
+      await monti.connect();
+      monti.disconnect();
 
       server.setCount(0);
-      await kadira.sendTraces(traces, 1024 * 2);
+      await monti.sendTraces(traces, 1024 * 2);
 
       assert.strictEqual(server.getCount(), 3);
       assert.strictEqual(server.getTraceCount(), 200);
