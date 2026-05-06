@@ -18,6 +18,7 @@ export const WebSocketEvent = {
 
 export enum ContentType {
   JSON = 'application/json',
+  JSON_LINES = 'application/jsonlines',
   TEXT = 'text/plain',
   STREAM = 'application/octet-stream',
 }
@@ -41,8 +42,10 @@ export enum HttpMethod {
 
 export enum Feature {
   WEBSOCKETS = 'websockets',
+  JSON_LINE_TRACES = 'json_line_traces'
 }
 
 export const SupportedFeatures = {
   [Feature.WEBSOCKETS]: true,
+  [Feature.JSON_LINE_TRACES]: true
 };

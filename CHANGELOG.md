@@ -7,6 +7,13 @@
 - rename Kadira export to Monti
 - fix using proxies
 
+## 1.9.0
+May 6, 2026
+
+* Support sending traces in batches with newTraces function
+* Add instance id header
+* Avoid storing full streams in-memory
+
 ## 1.8.1
 August 19, 2025
 

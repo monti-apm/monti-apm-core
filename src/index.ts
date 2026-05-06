@@ -60,7 +60,7 @@ const defaultOptions = {
 // exporting this for if we need to get this as a NPM module.
 export class Monti extends EventEmitter2 {
   _supportedFeatures = SupportedFeatures;
-  _allowedFeatures: Record<string, boolean> = {};
+  _allowedFeatures: Record<string, boolean> = Object.create(null);
   _options: MontiOptions;
   _headers: Record<string, string> = {};
   _clock: Clock;
@@ -72,6 +72,8 @@ export class Monti extends EventEmitter2 {
   constructor(_options?: Partial<MontiOptions>) {
     super();
 
+    const instanceId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     this._options = Object.assign({}, defaultOptions, _options);
     this._headers = {
       'content-type': ContentType.JSON,
@@ -80,6 +82,7 @@ export class Monti extends EventEmitter2 {
       'kadira-app-secret': this._options.appSecret,
       'monti-agent-version': this._options.agentVersion,
       'monti-agent-hostname': this._options.hostname,
+      'monti-instance-id': instanceId
     };
 
     this._clock = new Clock({
@@ -194,12 +197,51 @@ export class Monti extends EventEmitter2 {
     });
   }
 
-  get(
-    path: string,
-    options: {
-      noRetry?: boolean;
-    } = {},
-  ) {
+  sendTraces(traces: Object[], maxRequestSize = 1024 * 1024 * 5) {
+    if (traces.length === 0) {
+      return Promise.resolve();
+    }
+
+    let bodies: Buffer[] = [];
+    let currentRequestSize = 0;
+    let currentRequestLines: string[] = [];
+
+    function createBody() {
+      bodies.push(Buffer.from(currentRequestLines.join('')));
+      currentRequestLines.length = 0;
+      currentRequestSize = 0;
+    }
+
+    for(let i = 0; i < traces.length; i++) {
+      let stringified = JSON.stringify(traces[i]) + '\n';
+      let size = Buffer.byteLength(stringified, 'utf-8');
+      if (
+        currentRequestSize > 0 &&
+        currentRequestSize + size > maxRequestSize
+      ) {
+        createBody();
+      }
+
+      currentRequestSize += size;
+      currentRequestLines.push(stringified);
+    }
+
+    if (currentRequestSize > 0) {
+      createBody();
+    }
+
+    return Promise.all(bodies.map(body => {
+      let url = this._options.endpoint + '/traces';
+      return this._send(url, {
+        data: body,
+        headers: {
+          'content-type': ContentType.JSON_LINES
+        }
+      });
+    }));
+  }
+
+  get(path: string, options: { noRetry?: boolean } = {}) {
     const url = this._options.endpoint + path;
     const params = {
       headers: {
@@ -219,6 +261,8 @@ export class Monti extends EventEmitter2 {
         ...this._headers,
         'content-type': ContentType.STREAM,
       },
+      // Prevent full stream being buffered in-memory
+      maxRedirects: 0
     };
 
     logger(`send stream to ${url}`);

@@ -74,7 +74,7 @@ export function axiosRetry(
 }
 
 export function parseAllowedFeaturesHeader(header: string) {
-  const result: Record<string, boolean> = {};
+  const result: Record<string, boolean> = Object.create(null);
 
   if (header) {
     header.split(',').map((feature) => {

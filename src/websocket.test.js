@@ -129,8 +129,8 @@ describe('WebSockets', function () {
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
-    expect(monti._websocketHeaders).to.contain({
-      'monti-supported-features': 'websockets',
+    expect(kadira._websocketHeaders).to.contain({
+      'monti-supported-features': 'websockets,json_line_traces'
     });
 
     monti.disconnect();
