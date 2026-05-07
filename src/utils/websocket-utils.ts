@@ -36,8 +36,6 @@ export function connectWebSocket(
       ws.removeEventListener(WebSocketEvent.CLOSE, errorHandler);
       ws.removeEventListener(WebSocketEvent.ERROR, errorHandler);
 
-      WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
-
       ws.on(WebSocketEvent.MESSAGE, (event) => {
         const data = event.data.toString();
 
@@ -95,6 +93,8 @@ export function persistentConnectWebSocket(
           ws.close();
           break;
         }
+
+        WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_CONNECTED, ws);
 
         await once(ws, 'close');
 
