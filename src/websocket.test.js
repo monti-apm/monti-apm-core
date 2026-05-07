@@ -7,7 +7,8 @@ import { sleep } from './utils';
 import server, { connections, wss } from './tests/server';
 
 function send(data) {
-  connections.values().next().value.send(JSON.stringify(data));
+  const ws = connections.values().next().value;
+  ws.send(JSON.stringify(data));
 }
 
 describe('WebSockets', function () {
@@ -24,6 +25,8 @@ describe('WebSockets', function () {
   });
 
   afterEach((done) => {
+    WebSocketEvents.removeAllListeners();
+    wss._webSocketEnabled = true;
     server.stop(done);
   });
 

@@ -55,6 +55,8 @@ wss.on('connection', function (ws) {
   });
 
   ws.on('close', function () {
+    clearInterval(ws._interval);
+    clearTimeout(ws._timeout);
     connections.delete(ws);
   });
 
