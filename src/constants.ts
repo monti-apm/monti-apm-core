@@ -42,10 +42,10 @@ export enum HttpMethod {
 
 export enum Feature {
   WEBSOCKETS = 'websockets',
-  JSON_LINE_TRACES = 'json_line_traces'
+  JSON_LINE_TRACES = 'json_line_traces',
 }
 
 export const SupportedFeatures = {
   [Feature.WEBSOCKETS]: true,
-  [Feature.JSON_LINE_TRACES]: true
+  [Feature.JSON_LINE_TRACES]: true,
 };

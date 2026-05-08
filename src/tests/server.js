@@ -6,11 +6,13 @@ import { ContentType } from '../constants';
 
 const app = express();
 
-app.use(express.raw({
-  type(req) {
-    return req.headers['content-type'] !== ContentType.JSON;
-  }
-}));
+app.use(
+  express.raw({
+    type(req) {
+      return req.headers['content-type'] !== ContentType.JSON;
+    },
+  }),
+);
 app.use(express.json({ limit: '100mb' }));
 
 const server = http.createServer(app);
@@ -126,7 +128,7 @@ export default {
   getTraceCount: () => tracesCount,
   setTraceCount: (n) => {
     tracesCount = n;
-  }
+  },
 };
 
 function authenticate(req) {
@@ -174,7 +176,9 @@ app.all('/ping', (req, res) => {
 app.post('/traces', (req, res) => {
   if (authenticate(req)) {
     const data = req.body.toString();
-    const traceCount = data.split('\n').filter(line => line.length > 0).length;
+    const traceCount = data
+      .split('\n')
+      .filter((line) => line.length > 0).length;
     tracesCount += traceCount;
     requestCount++;
 

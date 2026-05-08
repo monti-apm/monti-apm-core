@@ -53,8 +53,8 @@ const defaultOptions = {
   dataFlushInterval: 1000 * 10,
   retryOptions: {
     maxRetries: 3, // Same as the previous 4 not counting the first try.
-    authRetryDelay: 1000 * 30
-  }
+    authRetryDelay: 1000 * 30,
+  },
 };
 
 // exporting this for if we need to get this as a NPM module.
@@ -82,7 +82,7 @@ export class Monti extends EventEmitter2 {
       'kadira-app-secret': this._options.appSecret,
       'monti-agent-version': this._options.agentVersion,
       'monti-agent-hostname': this._options.hostname,
-      'monti-instance-id': instanceId
+      'monti-instance-id': instanceId,
     };
 
     this._clock = new Clock({
@@ -197,14 +197,14 @@ export class Monti extends EventEmitter2 {
     });
   }
 
-  sendTraces(traces: Object[], maxRequestSize = 1024 * 1024 * 5) {
+  sendTraces(traces: unknown[], maxRequestSize = 1024 * 1024 * 5) {
     if (traces.length === 0) {
       return Promise.resolve();
     }
 
-    let bodies: Buffer[] = [];
+    const bodies: Buffer[] = [];
     let currentRequestSize = 0;
-    let currentRequestLines: string[] = [];
+    const currentRequestLines: string[] = [];
 
     function createBody() {
       bodies.push(Buffer.from(currentRequestLines.join('')));
@@ -212,9 +212,9 @@ export class Monti extends EventEmitter2 {
       currentRequestSize = 0;
     }
 
-    for(let i = 0; i < traces.length; i++) {
-      let stringified = JSON.stringify(traces[i]) + '\n';
-      let size = Buffer.byteLength(stringified, 'utf-8');
+    for (let i = 0; i < traces.length; i++) {
+      const stringified = JSON.stringify(traces[i]) + '\n';
+      const size = Buffer.byteLength(stringified, 'utf-8');
       if (
         currentRequestSize > 0 &&
         currentRequestSize + size > maxRequestSize
@@ -230,15 +230,17 @@ export class Monti extends EventEmitter2 {
       createBody();
     }
 
-    return Promise.all(bodies.map(body => {
-      let url = this._options.endpoint + '/traces';
-      return this._send(url, {
-        data: body,
-        headers: {
-          'content-type': ContentType.JSON_LINES
-        }
-      });
-    }));
+    return Promise.all(
+      bodies.map((body) => {
+        const url = this._options.endpoint + '/traces';
+        return this._send(url, {
+          data: body,
+          headers: {
+            'content-type': ContentType.JSON_LINES,
+          },
+        });
+      }),
+    );
   }
 
   get(path: string, options: { noRetry?: boolean } = {}) {
@@ -262,7 +264,7 @@ export class Monti extends EventEmitter2 {
         'content-type': ContentType.STREAM,
       },
       // Prevent full stream being buffered in-memory
-      maxRedirects: 0
+      maxRedirects: 0,
     };
 
     logger(`send stream to ${url}`);
