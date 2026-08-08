@@ -1,5 +1,6 @@
 import express from 'express';
 import http from 'http';
+import { createProxy } from 'proxy';
 import WebSocket from 'ws';
 import retry from '../retry';
 import { ContentType } from '../constants';
@@ -81,6 +82,20 @@ wss.on('connection', function (ws) {
   });
 });
 
+const proxyServer = createProxy();
+const proxySockets = new Set();
+let proxyRequests = [];
+
+proxyServer.authenticate = (req) => {
+  proxyRequests.push({ headers: req.headers, url: req.url });
+  return true;
+};
+
+proxyServer.on('connection', (socket) => {
+  proxySockets.add(socket);
+  socket.on('close', () => proxySockets.delete(socket));
+});
+
 let requestCount = 0;
 let latestData = {};
 let latestJobs = {};
@@ -90,11 +105,17 @@ let tracesCount = 0;
 
 export default {
   start: (callback) => {
-    server.listen(8000, callback);
+    proxyRequests = [];
+
+    server.listen(8000, () => {
+      proxyServer.listen(0, '127.0.0.1', callback);
+    });
   },
   stop: (callback) => {
-    connections.forEach((ws) => ws.close());
-    server.close(callback);
+    connections.forEach((ws) => ws.terminate());
+    proxySockets.forEach((socket) => socket.destroy());
+
+    proxyServer.close(() => server.close(callback));
   },
   async startAsync() {
     return new Promise((resolve) => {
@@ -128,6 +149,14 @@ export default {
   getTraceCount: () => tracesCount,
   setTraceCount: (n) => {
     tracesCount = n;
+  },
+  getProxyRequests: () => proxyRequests,
+  getProxyUrl: (auth) => {
+    const { port } = proxyServer.address();
+
+    return auth
+      ? `http://${auth}@127.0.0.1:${port}`
+      : `http://127.0.0.1:${port}`;
   },
 };
 
