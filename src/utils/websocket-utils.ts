@@ -1,7 +1,10 @@
-import WebSocket from 'faye-websocket';
+import WebSocket from 'ws';
+import debug from 'debug';
 import { WebSocketEvent } from '../constants';
 import { sleep } from './index';
 import EventEmitter2 from 'eventemitter2';
+
+const logger = debug('monti-apm-core:transport');
 
 export const WebSocketEvents = new EventEmitter2();
 
@@ -13,31 +16,48 @@ export function connectWebSocket(
   url: string,
   headers: Record<string, string>,
   onMessage: (data: string) => void = () => ({}),
-): Promise<WebSocket.Client> {
+  agent?: any,
+): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
-    const errorHandler = (event: any) => {
-      reject(event);
+    const errorHandler = (error: Error) => {
+      reject(error);
+    };
+    const closeHandler = (code: number, reason: Buffer) => {
+      const error = new Error(
+        reason.length > 0
+          ? reason.toString()
+          : `WebSocket closed before connecting (${code})`,
+      );
+
+      Object.assign(error, { code });
+
+      reject(error);
     };
 
     WebSocketEvents.emit(WebSocketEvent.WEBSOCKET_ATTEMPT);
 
-    const ws = new WebSocket.Client(getWsUrl(url).concat('/websocket'), null, {
+    const ws = new WebSocket(getWsUrl(url).concat('/websocket'), {
       headers,
+      agent,
+      perMessageDeflate: false,
     });
 
-    ws.pong = () => {
-      ws.send('pong');
-    };
-
-    ws.on(WebSocketEvent.CLOSE, errorHandler);
-    ws.on(WebSocketEvent.ERROR, errorHandler);
+    ws.once(WebSocketEvent.CLOSE, closeHandler);
+    ws.once(WebSocketEvent.ERROR, errorHandler);
 
     ws.on(WebSocketEvent.OPEN, () => {
-      ws.removeEventListener(WebSocketEvent.CLOSE, errorHandler);
-      ws.removeEventListener(WebSocketEvent.ERROR, errorHandler);
+      ws.off(WebSocketEvent.CLOSE, closeHandler);
+      ws.off(WebSocketEvent.ERROR, errorHandler);
 
-      ws.on(WebSocketEvent.MESSAGE, (event) => {
-        const data = event.data.toString();
+      // Errors after a connection is established are followed by a close event,
+      // which triggers reconnection. Keep a listener so EventEmitter does not
+      // treat the error as uncaught.
+      ws.on(WebSocketEvent.ERROR, (error) => {
+        logger('WebSocket error after connecting: %O', error);
+      });
+
+      ws.on(WebSocketEvent.MESSAGE, (message) => {
+        const data = message.toString();
 
         if (!data) {
           return;
@@ -45,7 +65,7 @@ export function connectWebSocket(
 
         if (data === 'ping') {
           ws.emit(WebSocketEvent.PING);
-          ws.pong();
+          ws.send('pong');
           return;
         }
 
@@ -61,9 +81,9 @@ export function connectWebSocket(
   });
 }
 
-export const once = async (ws: WebSocket.Client, event: string) =>
-  new Promise((resolve) => {
-    ws.once(event, resolve);
+export const once = async (ws: WebSocket, event: string) =>
+  new Promise<void>((resolve) => {
+    ws.once(event, () => resolve());
   });
 
 export const MAX_DELAY = 60000;
@@ -72,11 +92,12 @@ export function persistentConnectWebSocket(
   endpoint: string,
   headers: Record<string, string>,
   onMessage: (data: string) => void = () => undefined,
+  agent?: any,
   timeFunction = (i: number) =>
     Math.min(64 * Math.pow(i, 2), MAX_DELAY) * (0.9 + 0.2 * Math.random()),
 ) {
   let stopped: boolean;
-  let ws: WebSocket.Client | null = null;
+  let ws: WebSocket | null = null;
 
   async function connect() {
     stopped = false;
@@ -85,7 +106,7 @@ export function persistentConnectWebSocket(
 
     while (!stopped) {
       try {
-        ws = await connectWebSocket(endpoint, headers, onMessage);
+        ws = await connectWebSocket(endpoint, headers, onMessage, agent);
 
         attempts = 0;
 

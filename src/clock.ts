@@ -3,6 +3,7 @@ import axios from 'axios';
 
 export type Options = {
   endpoint?: string;
+  agent?: any;
 };
 
 const defaultOptions: Options = {
@@ -66,7 +67,11 @@ export default class Clock {
       throw new Error('endpoint is not set');
     }
 
-    const res = await axios.get(this._options.endpoint);
+    const res = await axios.get(this._options.endpoint, {
+      httpAgent: this._options.agent,
+      httpsAgent: this._options.agent,
+      proxy: false,
+    });
 
     if (res.status !== 200) {
       throw new Error('request failed: ' + res.status);

@@ -85,16 +85,21 @@ export class Monti extends EventEmitter2 {
       'monti-instance-id': instanceId,
     };
 
-    this._clock = new Clock({
-      endpoint: this._options.endpoint + '/simplentp/sync',
-    });
-
     this._clockSyncInterval = null;
 
     const proxyUrl = this._options.proxy || process.env.HTTPS_PROXY;
     if (proxyUrl) {
       this._agent = new HttpsProxyAgent(proxyUrl);
     }
+
+    this._clock = new Clock({
+      endpoint: this._options.endpoint + '/simplentp/sync',
+      agent: this._agent,
+    });
+  }
+
+  get _agentConfig() {
+    return { httpAgent: this._agent, httpsAgent: this._agent };
   }
 
   get _websocketHeaders() {
@@ -300,6 +305,7 @@ export class Monti extends EventEmitter2 {
       this._options.endpoint,
       this._websocketHeaders,
       this._handleMessage.bind(this),
+      this._agent,
     );
 
     this._disconnectWebSocket = disconnect;
@@ -310,7 +316,7 @@ export class Monti extends EventEmitter2 {
   async _checkAuth() {
     const uri = this._options.endpoint + '/ping';
 
-    const params = { headers: this._headers };
+    const params = { headers: this._headers, ...this._agentConfig };
 
     const baseDelay = this._options.retryOptions.authRetryDelay || 1000 * 30;
     const retryOptions = {
@@ -345,7 +351,7 @@ export class Monti extends EventEmitter2 {
           ...this._headers,
           ...params.headers,
         },
-        httpsAgent: this._agent,
+        ...this._agentConfig,
       },
       this._options.retryOptions,
     );

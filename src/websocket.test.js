@@ -154,9 +154,10 @@ describe('WebSockets', function () {
       pingCount++;
     });
 
-    // We override the pong method to prevent the client from sending a pong
-    // eslint-disable-next-line no-empty-function
-    ws.pong = () => {};
+    // Prevent the client from sending the application-level pong message.
+    ws.send = () => {
+      // empty
+    };
 
     await sleep(300);
 
