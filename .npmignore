@@ -11,3 +11,5 @@ scripts
 /dist/**.test.js
 /dist/**.test.js.map
 /dist/tests
+/dist/tsconfig.tsbuildinfo
+/experimental
