@@ -21,7 +21,7 @@ export class AwaitDetector {
   public destroyed: boolean;
   private trackingContext: null | object;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   private stopHookSet: Function;
   private nextPromiseFromConstructor: boolean;
   private onAwaitStart: (promise: Promise<any>, context: object) => void;

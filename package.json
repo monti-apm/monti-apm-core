@@ -33,11 +33,11 @@
     "@types/debug": "^4.1.13",
     "@types/node": "^20.6.3",
     "@types/ws": "^8.18.1",
-    "@typescript-eslint/eslint-plugin": "5.62.0",
-    "@typescript-eslint/parser": "5.62.0",
+    "@typescript-eslint/eslint-plugin": "8.67.0",
+    "@typescript-eslint/parser": "8.67.0",
     "chai": "^6.2.2",
     "cross-env": "^10.1.0",
-    "eslint": "8.45.0",
+    "eslint": "8.57.1",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
     "express": "^5.2.1",
@@ -49,7 +49,7 @@
     "rimraf": "^4.4.1",
     "sinon": "^15.2.0",
     "ts-node": "^9.1.1",
-    "typescript": "4.9.5"
+    "typescript": "6.0.2"
   },
   "dependencies": {
     "axios": "^1.18.1",
