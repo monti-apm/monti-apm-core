@@ -3,7 +3,7 @@
 ## Next
 - rename to @monti-apm/core
 - rewrite to typescript
-- minimum Node version raised from 4 to 8
+- minimum Node version raised from 4 to 20
 - rename Kadira export to Monti
 - fix using proxies
 
