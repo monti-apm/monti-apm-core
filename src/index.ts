@@ -127,11 +127,18 @@ export class Monti extends EventEmitter2 {
     }
 
     this._clockSyncInterval = setInterval(
-      () => this._clock.sync(),
+      () =>
+        this._clock.sync().catch((err) => {
+          logger(`Failed syncing clock: ${err}`);
+        }),
       this._options.clockSyncInterval,
     );
 
     await this._clock.sync();
+
+    if (this._disconnected) {
+      return;
+    }
 
     this._initWebSocket();
   }
