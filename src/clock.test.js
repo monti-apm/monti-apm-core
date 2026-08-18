@@ -36,4 +36,14 @@ describe('clock', function () {
     await clock.sync();
     assert(inRange(clock.fixTime(1e4) - 1e4, -1100, -900));
   });
+
+  it('should reject malformed server timestamps', async function () {
+    const clock = new Clock({
+      endpoint: 'http://localhost:8000/_test/malformed-clock',
+    });
+
+    await assert.rejects(clock._syncOnce());
+
+    assert.strictEqual(clock.ready, false);
+  });
 });

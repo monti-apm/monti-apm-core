@@ -67,16 +67,19 @@ export default class Clock {
       throw new Error('endpoint is not set');
     }
 
-    const res = await axios.get(this._options.endpoint, {
+    const { data } = await axios.get<string>(this._options.endpoint, {
       httpAgent: this._options.agent,
       httpsAgent: this._options.agent,
       proxy: false,
+      responseType: 'text',
     });
 
-    if (res.status !== 200) {
-      throw new Error('request failed: ' + res.status);
+    const timestamp = Number(data);
+
+    if (!Number.isFinite(timestamp) || timestamp <= 0) {
+      throw new Error('invalid timestamp response');
     }
 
-    return parseInt(res.data, 10);
+    return timestamp;
   }
 }
