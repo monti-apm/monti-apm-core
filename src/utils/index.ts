@@ -77,7 +77,9 @@ export function parseAllowedFeaturesHeader(header: string) {
   const result: Record<string, boolean> = Object.create(null);
 
   if (header) {
-    header.split(',').map((feature) => {
+    header.split(',').forEach((_feature) => {
+      const feature = _feature.trim();
+
       if (SupportedFeatures[feature as Feature]) {
         result[feature] = true;
       }
