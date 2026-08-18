@@ -19,6 +19,7 @@ import { hostname } from 'os';
 import EventEmitter2 from 'eventemitter2';
 import { persistentConnectWebSocket } from './utils/websocket-utils';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { getProxyForUrl } from 'proxy-from-env';
 
 const logger = debug('monti-apm-core:transport');
 const jobLogger = debug('monti-apm-core:jobs');
@@ -87,7 +88,8 @@ export class Monti extends EventEmitter2 {
 
     this._clockSyncInterval = null;
 
-    const proxyUrl = this._options.proxy || process.env.HTTPS_PROXY;
+    const proxyUrl =
+      this._options.proxy || getProxyForUrl(this._options.endpoint);
     if (proxyUrl) {
       this._agent = new HttpsProxyAgent(proxyUrl);
     }

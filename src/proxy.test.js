@@ -11,12 +11,25 @@ describe('proxy', function () {
   const retryOptions = { authRetryDelay: 1, maxRetries: 0 };
   const credentials = 'proxy-user:proxy-password';
 
+  const proxyEnvironmentKeys = [
+    'HTTP_PROXY',
+    'HTTPS_PROXY',
+    'NO_PROXY',
+    'ALL_PROXY',
+    'http_proxy',
+    'https_proxy',
+    'no_proxy',
+    'all_proxy',
+  ];
+
   let monti;
-  let originalHttpsProxy;
+  let originalProxyEnvironment;
 
   beforeEach(async function () {
-    originalHttpsProxy = process.env.HTTPS_PROXY;
-    delete process.env.HTTPS_PROXY;
+    originalProxyEnvironment = Object.fromEntries(
+      proxyEnvironmentKeys.map((key) => [key, process.env[key]]),
+    );
+    proxyEnvironmentKeys.forEach((key) => delete process.env[key]);
 
     server.setCount(0);
     await server.startAsync();
@@ -30,11 +43,13 @@ describe('proxy', function () {
 
     WebSocketEvents.removeAllListeners();
 
-    if (originalHttpsProxy === undefined) {
-      delete process.env.HTTPS_PROXY;
-    } else {
-      process.env.HTTPS_PROXY = originalHttpsProxy;
-    }
+    proxyEnvironmentKeys.forEach((key) => {
+      if (originalProxyEnvironment[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalProxyEnvironment[key];
+      }
+    });
 
     await server.stopAsync();
   });
@@ -116,13 +131,26 @@ describe('proxy', function () {
     assert.strictEqual(server.getProxyRequests().length, 4);
   });
 
-  it('should use HTTPS_PROXY when no proxy option is configured', async function () {
-    process.env.HTTPS_PROXY = server.getProxyUrl();
+  it('should use HTTP_PROXY for an HTTP endpoint', async function () {
+    process.env.HTTP_PROXY = server.getProxyUrl();
 
     monti = new Monti({ ...auth, endpoint, retryOptions });
 
-    await monti.sendData({ source: 'HTTPS_PROXY' });
+    await monti.sendData({ source: 'HTTP_PROXY' });
 
     assert.strictEqual(server.getProxyRequests().length, 1);
+  });
+
+  it('should bypass environment proxies when the host matches NO_PROXY', async function () {
+    const proxy = server.getProxyUrl();
+    process.env.HTTP_PROXY = proxy;
+    process.env.HTTPS_PROXY = proxy;
+    process.env.NO_PROXY = '127.0.0.1';
+
+    monti = new Monti({ ...auth, endpoint, retryOptions });
+
+    await monti.sendData({ source: 'NO_PROXY' });
+
+    assert.strictEqual(server.getProxyRequests().length, 0);
   });
 });
