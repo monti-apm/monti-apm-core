@@ -277,6 +277,9 @@ export class Monti extends EventEmitter2 {
       },
       // Prevent full stream being buffered in-memory
       maxRedirects: 0,
+      // Streams cannot be safely replayed after a request starts consuming
+      // them. Retrying the same stream would send an empty or partial body.
+      noRetry: true,
     };
 
     logger(`send stream to ${url}`);

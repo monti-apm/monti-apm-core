@@ -258,6 +258,23 @@ app.all('/_test/network-err', (req, res) => {
   res.socket.destroy();
 });
 
+app.all('/_test/stream-network-err', (req, res) => {
+  requestCount++;
+  latestData = req.body.toString('utf-8');
+
+  if (requestCount === 1) {
+    res.socket.destroy();
+    return;
+  }
+
+  res.end();
+});
+
+app.all('/_test/malformed-clock', (req, res) => {
+  requestCount++;
+  res.end('not-a-timestamp');
+});
+
 // handles metric/trace data requests.
 app.all('/', (req, res) => {
   requestCount++;

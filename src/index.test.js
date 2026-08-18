@@ -204,6 +204,20 @@ describe('monti', function () {
 
       assert.strictEqual(server.getData(), 'content');
     });
+
+    it('should not retry a consumed stream after a network error', async function () {
+      const monti = new Monti(validOpts);
+      const stream = Readable.from(['content']);
+
+      server.setCount(0);
+
+      await assert.rejects(
+        monti.sendStream('/_test/stream-network-err', stream),
+      );
+
+      assert.strictEqual(server.getCount(), 1);
+      assert.strictEqual(server.getData(), 'content');
+    });
   });
 
   describe('updateJob', function () {
