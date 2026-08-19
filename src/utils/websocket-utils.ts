@@ -126,7 +126,6 @@ export function persistentConnectWebSocket(
           // Avoid showing too many errors in the logs. Show the 10th error
           // and every 100th error
           if (attempts === 10 || (attempts > 0 && attempts % 100 === 0)) {
-            // eslint-disable-next-line no-console
             console.error(
               `Monti APM: Failed connecting websocket: ${error.message}`,
             );

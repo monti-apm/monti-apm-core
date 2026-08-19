@@ -39,7 +39,7 @@ describe('retry', function () {
 
     try {
       result = await retry(() => Promise.resolve('result'));
-    } catch (e) {
+    } catch {
       erred = true;
     }
 

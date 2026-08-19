@@ -1,6 +1,5 @@
 import express from 'express';
 import http from 'http';
-import { createProxy } from 'proxy';
 import WebSocket from 'ws';
 import retry from '../retry';
 import { ContentType } from '../constants';
@@ -82,19 +81,29 @@ wss.on('connection', function (ws) {
   });
 });
 
-const proxyServer = createProxy();
+let proxyServer;
 const proxySockets = new Set();
 let proxyRequests = [];
 
-proxyServer.authenticate = (req) => {
-  proxyRequests.push({ headers: req.headers, url: req.url });
-  return true;
-};
+async function getProxyServer() {
+  if (!proxyServer) {
+    // proxy is ESM-only
+    const { createProxy } = await import('proxy');
+    proxyServer = createProxy();
 
-proxyServer.on('connection', (socket) => {
-  proxySockets.add(socket);
-  socket.on('close', () => proxySockets.delete(socket));
-});
+    proxyServer.authenticate = (req) => {
+      proxyRequests.push({ headers: req.headers, url: req.url });
+      return true;
+    };
+
+    proxyServer.on('connection', (socket) => {
+      proxySockets.add(socket);
+      socket.on('close', () => proxySockets.delete(socket));
+    });
+  }
+
+  return proxyServer;
+}
 
 let requestCount = 0;
 let latestData = {};
@@ -107,9 +116,11 @@ export default {
   start: (callback) => {
     proxyRequests = [];
 
-    server.listen(8000, () => {
-      proxyServer.listen(0, '127.0.0.1', callback);
-    });
+    getProxyServer().then((proxyServer) => {
+      server.listen(8000, () => {
+        proxyServer.listen(0, '127.0.0.1', callback);
+      });
+    }, callback);
   },
   stop: (callback) => {
     connections.forEach((ws) => ws.terminate());

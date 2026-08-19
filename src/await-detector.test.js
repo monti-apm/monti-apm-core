@@ -1,6 +1,6 @@
+import assert from 'node:assert/strict';
+import { mock } from 'node:test';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import { expect } from 'chai';
-import { spy } from 'sinon';
 import { sleep } from './utils';
 import { SupportsAsyncLocalStorage } from './utils/platform';
 
@@ -21,6 +21,7 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
     });
 
     afterEach(() => {
+      mock.restoreAll();
       detector.destroy();
     });
 
@@ -28,8 +29,8 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
       it('should replace the global promise constructor', () => {
         const originalPromise = AwaitDetector.OldPromiseConstructor;
 
-        expect(global.Promise).to.not.equal(originalPromise);
-        expect(global.Promise[AwaitDetector.Symbol]).to.be.true;
+        assert.notStrictEqual(global.Promise, originalPromise);
+        assert.strictEqual(global.Promise[AwaitDetector.Symbol], true);
       });
 
       it('should unwrap the promise constructor', () => {
@@ -37,18 +38,18 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
 
         detector.destroy();
 
-        expect(global.Promise).to.equal(originalPromise);
-        expect(global.Promise[AwaitDetector.Symbol]).to.be.undefined;
+        assert.strictEqual(global.Promise, originalPromise);
+        assert.strictEqual(global.Promise[AwaitDetector.Symbol], undefined);
       });
 
       it('should have native promises instanceof wrapped promise', () => {
-        let WrappedPromise = detector.createWrappedPromiseConstructor(
+        const WrappedPromise = detector.createWrappedPromiseConstructor(
           global.Promise,
         );
         const prom = (async () => {
           await 0;
         })();
-        expect(prom instanceof WrappedPromise).to.be.true;
+        assert(prom instanceof WrappedPromise);
       });
     });
 
@@ -56,8 +57,8 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
       it('should run onAwaitStart and onAwaitEnd', async () => {
         console.log(detector);
 
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           await sleep(10);
@@ -65,21 +66,18 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.calledOnce).to.be.true;
-        expect(onAwaitEndSpy.calledOnce).to.be.true;
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 1);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 1);
 
-        expect(onAwaitStartSpy.getCall(0).args).to.have.length(2);
-        expect(onAwaitEndSpy.getCall(0).args).to.have.length(2);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.strictEqual(onAwaitStartSpy.mock.calls[0].arguments.length, 2);
+        assert.strictEqual(onAwaitEndSpy.mock.calls[0].arguments.length, 2);
       });
 
       it('should resolve awaits in the correct order', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           await sleep(10);
@@ -88,23 +86,22 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(3);
-        expect(onAwaitEndSpy.callCount).to.be.equal(3);
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 3);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 3);
 
-        const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
-        const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+        const starts = onAwaitStartSpy.mock.calls.map(
+          (call) => call.arguments[0],
+        );
+        const ends = onAwaitEndSpy.mock.calls.map((call) => call.arguments[0]);
 
-        expect(starts).to.be.deep.equal(ends);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.deepStrictEqual(starts, ends);
       });
 
       it('should track a complicated scenario', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           let promise = Promise.resolve();
@@ -122,23 +119,22 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(5);
-        expect(onAwaitEndSpy.callCount).to.be.equal(5);
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 5);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 5);
 
-        const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
-        const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+        const starts = onAwaitStartSpy.mock.calls.map(
+          (call) => call.arguments[0],
+        );
+        const ends = onAwaitEndSpy.mock.calls.map((call) => call.arguments[0]);
 
-        expect(starts).to.be.deep.equal(ends);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.deepStrictEqual(starts, ends);
       });
 
       it('should track a complicated scenario', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           let promise = Promise.resolve();
@@ -158,23 +154,22 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(4);
-        expect(onAwaitEndSpy.callCount).to.be.equal(4);
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 4);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 4);
 
-        const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
-        const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+        const starts = onAwaitStartSpy.mock.calls.map(
+          (call) => call.arguments[0],
+        );
+        const ends = onAwaitEndSpy.mock.calls.map((call) => call.arguments[0]);
 
-        expect(starts).to.be.deep.equal(ends);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.deepStrictEqual(starts, ends);
       });
 
       it('should ignore awaits', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           await sleep(10);
@@ -191,23 +186,22 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(2);
-        expect(onAwaitEndSpy.callCount).to.be.equal(2);
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 2);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 2);
 
-        const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
-        const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+        const starts = onAwaitStartSpy.mock.calls.map(
+          (call) => call.arguments[0],
+        );
+        const ends = onAwaitEndSpy.mock.calls.map((call) => call.arguments[0]);
 
-        expect(starts).to.be.deep.equal(ends);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.deepStrictEqual(starts, ends);
       });
 
       it('should detect await for nested async function', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         async function asyncTest() {
           await 0;
@@ -219,16 +213,13 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           await asyncTest();
         });
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(3);
-        expect(onAwaitEndSpy.callCount).to.be.equal(3);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 3);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 3);
       });
 
       it('should detect await for sleep function', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -237,22 +228,19 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           await sleep(1);
         });
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(2);
-        expect(onAwaitEndSpy.callCount).to.be.equal(2);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 2);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 2);
       });
 
       it('should not error when calling detect on destroyed detector', () => {
         detector.destroy();
 
-        expect(() => detector.detect(() => {})).to.not.throw();
+        assert.doesNotThrow(() => detector.detect(() => {}));
       });
 
       it.skip('should stop detecting after clean', async () => {
-        const onAwaitStartSpy = spy(detector, 'onAwaitStart');
-        const onAwaitEndSpy = spy(detector, 'onAwaitEnd');
+        const onAwaitStartSpy = mock.method(detector, 'onAwaitStart');
+        const onAwaitEndSpy = mock.method(detector, 'onAwaitEnd');
 
         const result = await detector.detect(async () => {
           await sleep(10);
@@ -262,18 +250,17 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
           return true;
         });
 
-        expect(result).to.be.true;
+        assert.strictEqual(result, true);
 
-        expect(onAwaitStartSpy.callCount).to.be.equal(1);
-        expect(onAwaitEndSpy.callCount).to.be.equal(1);
+        assert.strictEqual(onAwaitStartSpy.mock.callCount(), 1);
+        assert.strictEqual(onAwaitEndSpy.mock.callCount(), 1);
 
-        const starts = onAwaitStartSpy.getCalls().map((call) => call.args[0]);
-        const ends = onAwaitEndSpy.getCalls().map((call) => call.args[0]);
+        const starts = onAwaitStartSpy.mock.calls.map(
+          (call) => call.arguments[0],
+        );
+        const ends = onAwaitEndSpy.mock.calls.map((call) => call.arguments[0]);
 
-        expect(starts).to.be.deep.equal(ends);
-
-        onAwaitStartSpy.restore();
-        onAwaitEndSpy.restore();
+        assert.deepStrictEqual(starts, ends);
       });
     });
   },

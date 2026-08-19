@@ -62,7 +62,6 @@ export function axiosRetry(
 
           if (!retryEnabled) {
             const oldErr = err;
-            // eslint-disable-next-line no-param-reassign
             err = new ByPassRetryError(oldErr.message);
             err.stack = oldErr.stack;
           }

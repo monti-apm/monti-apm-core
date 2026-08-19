@@ -1,10 +1,9 @@
-import assert from 'assert';
+import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import server from './tests/server';
 import Monti from './index';
 import { ByPassRetryError } from './retry';
 import { Readable } from 'stream';
-import { expect } from 'chai';
 import { hostname } from 'os';
 
 describe('monti', function () {
@@ -87,7 +86,7 @@ describe('monti', function () {
 
       await monti.sendData({ content: dataString });
 
-      expect(server.getData()).to.deep.equal({
+      assert.deepStrictEqual(server.getData(), {
         content: dataString,
         host: hostname(),
       });

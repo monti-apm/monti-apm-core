@@ -1,6 +1,5 @@
 import Clock from './clock';
 import debug from 'debug';
-// eslint-disable-next-line max-len
 import {
   ContentType,
   CoreEvent,
@@ -9,7 +8,6 @@ import {
   HttpHeader,
   SupportedFeatures,
 } from './constants';
-// eslint-disable-next-line max-len
 import {
   axiosRetry,
   parseAllowedFeaturesHeader,

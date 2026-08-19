@@ -1,5 +1,5 @@
+import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import { expect } from 'chai';
 import { WebSocketEvents } from './utils/websocket-utils';
 import { CoreEvent, EngineEvent, WebSocketEvent } from './constants';
 import Monti from './index';
@@ -35,9 +35,12 @@ describe('WebSockets', function () {
 
     await monti.connect();
 
-    expect(monti._allowedFeatures).to.be.deep.equal({
-      websockets: true,
-    });
+    assert.deepStrictEqual(
+      { ...monti._allowedFeatures },
+      {
+        websockets: true,
+      },
+    );
 
     monti.disconnect();
   });
@@ -59,7 +62,7 @@ describe('WebSockets', function () {
 
     const [job] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
-    expect(job).to.be.deep.equal({
+    assert.deepStrictEqual(job, {
       _id: 'id1',
       foo: 'bar',
     });
@@ -84,7 +87,7 @@ describe('WebSockets', function () {
 
     const [event] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
-    expect(event).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
+    assert.deepStrictEqual(event, { _id: 'id1', foo: 'bar' });
 
     send({
       event: EngineEvent.JOB_CREATED,
@@ -96,7 +99,7 @@ describe('WebSockets', function () {
 
     const [job] = await monti.waitFor(CoreEvent.JOB_CREATED);
 
-    expect(job).to.be.deep.equal({ _id: 'id1', foo: 'bar' });
+    assert.deepStrictEqual(job, { _id: 'id1', foo: 'bar' });
 
     monti.disconnect();
   });
@@ -116,7 +119,7 @@ describe('WebSockets', function () {
 
     await sleep(1000);
 
-    expect(attemptCount).to.be.greaterThan(1);
+    assert(attemptCount > 1);
 
     wss._webSocketEnabled = true;
 
@@ -132,9 +135,10 @@ describe('WebSockets', function () {
 
     await WebSocketEvents.waitFor(WebSocketEvent.WEBSOCKET_CONNECTED);
 
-    expect(monti._websocketHeaders).to.contain({
-      'monti-supported-features': 'websockets,json_line_traces',
-    });
+    assert.strictEqual(
+      monti._websocketHeaders['monti-supported-features'],
+      'websockets,json_line_traces',
+    );
 
     monti.disconnect();
   });
@@ -161,8 +165,8 @@ describe('WebSockets', function () {
 
     await sleep(300);
 
-    expect(ws.readyState).to.be.equal(3);
-    expect(pingCount).to.be.above(0);
+    assert.strictEqual(ws.readyState, 3);
+    assert(pingCount > 0);
 
     monti.disconnect();
   });
@@ -184,9 +188,9 @@ describe('WebSockets', function () {
 
     await sleep(300);
 
-    expect(ws.readyState).to.be.equal(1);
+    assert.strictEqual(ws.readyState, 1);
 
-    expect(pingCount).to.be.above(0);
+    assert(pingCount > 0);
 
     monti.disconnect();
   });
