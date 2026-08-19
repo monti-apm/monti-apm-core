@@ -21,7 +21,7 @@ import { SupportsAsyncLocalStorage } from './utils/platform';
     });
 
     afterEach(() => {
-      mock.restoreAll();
+      mock.reset();
       detector.destroy();
     });
 
