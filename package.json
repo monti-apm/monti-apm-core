@@ -4,14 +4,14 @@
   "description": "Monti APM Core API",
   "main": "dist/index.js",
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
     "lint": "eslint src --cache",
     "lintfix": "eslint src --fix",
-    "test:dist": "mocha 'dist/**/*.test.js' --exit",
-    "test": "mocha src/**/*.test.js --require=ts-node/register/transpile-only --exit",
-    "test:watch": "nodemon --exec 'npm run test' -e js,ts --watch src",
+    "test:dist": "mocha 'dist/**/*.test.js'",
+    "test": "mocha src/**/*.test.js --require=ts-node/register/transpile-only",
+    "test:watch": "node --watch --watch-preserve-output ./node_modules/mocha/bin/mocha.js src/**/*.test.js --require=ts-node/register/transpile-only",
     "test:debug": "cross-env DEBUG=monti-apm-core:* npm run test:watch",
     "prepublishOnly": "npm run build"
   },
@@ -30,35 +30,30 @@
   },
   "homepage": "https://github.com/monti-apm/monti-apm-core#readme",
   "devDependencies": {
+    "@eslint/js": "9.39.5",
     "@types/debug": "^4.1.13",
-    "@types/node": "^20.6.3",
+    "@types/node": "^20.19.43",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "8.67.0",
     "@typescript-eslint/parser": "8.67.0",
-    "chai": "^6.2.2",
     "cross-env": "^10.1.0",
-    "eslint": "8.57.1",
-    "eslint-config-prettier": "8.8.0",
-    "eslint-plugin-prettier": "4.2.1",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.6",
     "express": "^5.2.1",
-    "glob": "^7.1.3",
-    "mocha": "6.2.3",
-    "nodemon": "2.0.21",
-    "prettier": "2.8.8",
-    "proxy": "^2.2.0",
-    "rimraf": "^4.4.1",
-    "sinon": "^15.2.0",
-    "ts-node": "^9.1.1",
-    "typescript": "6.0.2"
+    "globals": "^17.11.0",
+    "mocha": "11.8.0",
+    "prettier": "3.9.6",
+    "proxy": "^4.1.0",
+    "ts-node": "10.9.2",
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "axios": "^1.18.1",
     "debug": "^4.4.3",
     "eventemitter2": "^6.4.9",
     "https-proxy-agent": "^7.0.5",
+    "proxy-from-env": "^2.1.0",
     "ws": "^8.21.1"
-  },
-  "volta": {
-    "node": "20.9.0"
   }
 }
