@@ -54,6 +54,8 @@ describe('monti', function () {
       monti.disconnect();
       assert(inRange(monti._clock._diff, -1100, -900));
     });
+  });
+
   describe('options', function () {
     it('should merge partial retry options with the defaults', function () {
       const monti = new Monti({
