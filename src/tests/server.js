@@ -246,6 +246,12 @@ app.all('/_test/text', (req, res) => {
   res.end('hello-world');
 });
 
+// test route to verify the request method.
+app.all('/_test/method', (req, res) => {
+  requestCount++;
+  res.end(req.method);
+});
+
 // test route to test json responses.
 app.all('/_test/json', (req, res) => {
   requestCount++;

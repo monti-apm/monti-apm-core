@@ -258,6 +258,7 @@ export class Monti extends EventEmitter2 {
   get(path: string, options: { noRetry?: boolean } = {}) {
     const url = this._options.endpoint + path;
     const params = {
+      method: 'GET',
       headers: {
         ...this._headers,
       },
@@ -267,7 +268,7 @@ export class Monti extends EventEmitter2 {
     return this._send(url, params);
   }
 
-  sendStream(path: string, stream: ReadableStream) {
+  sendStream(path: string, stream: NodeJS.ReadableStream) {
     const url = this._options.endpoint + path;
     const params = {
       data: stream,

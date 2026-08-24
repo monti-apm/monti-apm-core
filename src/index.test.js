@@ -149,6 +149,14 @@ describe('monti', function () {
       assert.strictEqual(result, 'hello-world');
     });
 
+    it('should use the GET method', async function () {
+      const monti = new Monti(validOpts);
+
+      const method = await monti.get('/_test/method');
+
+      assert.strictEqual(method, 'GET');
+    });
+
     it('should allow disabling retries', async function () {
       this.timeout(20000);
       const options = Object.assign({}, validOpts);
