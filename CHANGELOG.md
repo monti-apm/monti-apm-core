@@ -1,6 +1,8 @@
 # Change Log
 
-## Next
+## 2.0.0
+Aug 24, 2026
+
 - rename to @monti-apm/core
 - rewrite to typescript
 - minimum Node version raised from 4 to 20
