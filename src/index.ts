@@ -23,7 +23,7 @@ const logger = debug('monti-apm-core:transport');
 const jobLogger = debug('monti-apm-core:jobs');
 
 export type Job = {
-  id: string;
+  _id: string;
   [key: string]: any;
 };
 
@@ -42,7 +42,11 @@ export type MontiOptions = {
   proxy?: string;
 };
 
-const defaultOptions = {
+export type MontiInputOptions = Omit<Partial<MontiOptions>, 'retryOptions'> & {
+  retryOptions?: Partial<MontiOptions['retryOptions']>;
+};
+
+const defaultOptions: MontiOptions = {
   appId: '',
   appSecret: '',
   agentVersion: 'unknown',
@@ -68,12 +72,19 @@ export class Monti extends EventEmitter2 {
   _disconnected = false;
   _agent: HttpsProxyAgent<string> | undefined;
 
-  constructor(_options?: Partial<MontiOptions>) {
+  constructor(_options?: MontiInputOptions) {
     super();
 
     const instanceId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    this._options = Object.assign({}, defaultOptions, _options);
+    this._options = {
+      ...defaultOptions,
+      ..._options,
+      retryOptions: {
+        ...defaultOptions.retryOptions,
+        ..._options?.retryOptions,
+      },
+    };
     this._headers = {
       'content-type': ContentType.JSON,
       accepts: ContentType.JSON,
